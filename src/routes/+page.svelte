@@ -3,23 +3,32 @@
 	import BobaText from '$lib/components/BobaText.svelte';
 	import Stripes from '$lib/components/Stripes.svelte';
 	import Logo from '$lib/assets/Logo.svg';
+    import playIcon from '$lib/assets/icons/yaya.svg';
+    import faqIcon from '$lib/assets/icons/huh.svg';
+    import horizonIcon from '$lib/assets/icons/h.svg';
     import { onMount } from 'svelte';
     import BobaButton from '$lib/components/BobaButton.svelte';
-    import TransAm from '$lib/components/TransAm.svelte';
-    import Card from '$lib/components/Card.svelte';
+    import CircleIn from '$lib/components/anim/CircleIn.svelte';
+    import SlideOut from '$lib/components/anim/SlideOut.svelte';
+    import MenuItem from '$lib/components/MenuItem.svelte';
     import { fade, fly } from 'svelte/transition';
     import { quintOut } from 'svelte/easing';
-    
 
     let activated = $state(false);
     let pressed = $state(false);
     let transitioning = $state(false);
     let stripesOutro = $state(false);
-    let selectedCard = $state(1);
+    let selectedCard = $state(0);
     let selectedElement = $state(-1); // -1 = card itself, 0+ = index within focusable elements
     let cardRefs: HTMLElement[] = [];
     let isTyping = $state(false);
     let btnPressed = $state(false);
+    let usingKeyboard = $state(true); // Track if user is using keyboard navigation
+    let showSlideOut = $state(false);
+
+    function activateJoinNow() {
+        showSlideOut = true;
+    }
 
     let logoRect: DOMRect | null = $state(null);
     let stripesRect: DOMRect | null = $state(null);
@@ -181,6 +190,11 @@
 
     onMount(() => {
         window.onkeydown = (ev) => {
+            // Switch to keyboard mode on navigation keys
+            if (['w', 'W', 's', 'S', 'a', 'A', 'd', 'D', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Tab', 'Escape'].includes(ev.key)) {
+                usingKeyboard = true;
+            }
+
             if (!activated) {
                 if (ev.key === 'Enter' && !stripesOutro) {
                     pressed = true;
@@ -195,14 +209,17 @@
 
                 const elements = getFocusableElements(selectedCard);
                 
-                if (ev.key === 'a' || ev.key === 'A' || ev.key === 'ArrowLeft') {
+                if (ev.key === 'w' || ev.key === 'W' || ev.key === 'ArrowUp') {
                     selectedCard = Math.max(0, selectedCard - 1);
                     selectedElement = -1;
-                } else if (ev.key === 'd' || ev.key === 'D' || ev.key === 'ArrowRight') {
+                } else if (ev.key === 's' || ev.key === 'S' || ev.key === 'ArrowDown') {
                     selectedCard = Math.min(2, selectedCard + 1);
                     selectedElement = -1;
-                } else if (ev.key === 's' || ev.key === 'S' || ev.key === 'ArrowDown' || ev.key === 'Enter') {
-                    if (elements.length > 0) {
+                } else if (ev.key === 'Enter') {
+                    if (selectedCard === 0) {
+                        ev.preventDefault();
+                        activateJoinNow();
+                    } else if (elements.length > 0) {
                         ev.preventDefault();
                         selectedElement = 0;
                         focusSelectedElement();
@@ -213,7 +230,10 @@
     });
 </script>
 
-<TransAm />
+<CircleIn />
+{#if showSlideOut}
+    <SlideOut />
+{/if}
 
 <BG class="flex flex-col overflow-hidden">
     {#if !activated}
@@ -236,8 +256,8 @@
         </div>
     {/if}
     {#if activated}
-        <div class="flex flex-col h-full gap-8 pb-8">
-            <div class="flex flex-col">
+        <div class="flex flex-col h-full items-center gap-8 pb-8">
+            <div class="flex flex-col w-full">
                 <div class="flex gap-4 items-end px-10 pt-10 pb-3">
                     <div in:animateLogoIn>
                         <img src={Logo} alt="Hack Club Horizon" class="h-24" />
@@ -245,39 +265,50 @@
                     <p in:fade={{ duration: 300, delay: 200 }} class="tagline">HACK CLUB'S <span class="underline">BIGGEST</span> EVENT</p>
                 </div>
                 <div in:animateStripesIn>
-                    <Stripes class="stripe-small" />
+                    <Stripes small />
                 </div>
             </div>
 
-            <div class="flex justify-center items-center gap-8 px-10 h-[435px]">
-                    <div in:fly={{ y: 50, duration: 400, delay: 500 }} class="h-full" bind:this={cardRefs[0]}>
-                        <Card title="WATCH THE VIDEO" selected={selectedCard === 0 && selectedElement === -1} class="w-80 h-full" />
-                    </div>
-                    <div in:fly={{ y: 50, duration: 400, delay: 600 }} class="h-full" bind:this={cardRefs[1]}>
-                        <Card title="JOIN NOW" highlighted selected={selectedCard === 1 && selectedElement === -1} class="w-[437px] h-full gap-4">
-                            <div class="w-full flex flex-col gap-5" role="group" onfocusin={handleElementFocus} onfocusout={handleElementBlur} onkeydown={handleElementKeydown}>
-                                <div class="input-wrapper">
-                                    <input 
-                                        type="email" 
-                                        placeholder="orpheus@hackclub.com" 
-                                        class="input-field" 
-                                        class:input-selected={selectedCard === 1 && selectedElement === 0}
-                                    />
-                                    {#if isTyping}
-                                        <span class="exit-hint">Press Enter to continue</span>
-                                    {/if}
-                                </div>
-                                <button class="submit-btn" class:btn-selected={selectedCard === 1 && selectedElement === 1} class:btn-pressed={btnPressed}>CONTINUE WITH HACK CLUB AUTH</button>
-                            </div>
-                        </Card>
-                    </div>
-                    <div in:fly={{ y: 50, duration: 400, delay: 700 }} class="h-full" bind:this={cardRefs[2]}>
-                        <Card title="FAQ" selected={selectedCard === 2 && selectedElement === -1} class="w-80 h-full" />
-                    </div>
+            <div class="flex flex-col items-center gap-7 w-full px-10">
+                <div in:fly={{ x: 50, duration: 400, delay: 500 }} bind:this={cardRefs[0]} onmouseenter={() => { usingKeyboard = false; selectedCard = 0; }} onclick={() => { if (selectedCard === 0) activateJoinNow(); }}>
+                    <MenuItem 
+                        title="JOIN NOW" 
+                        subtitle="START WORKING ON YOUR PROJECTS!"
+                        chevron
+                        selected={selectedCard === 0}
+                        preserveIcon
+                    >
+                        {#snippet icon()}
+                            <img src={horizonIcon} alt="Watch" />
+                        {/snippet}
+                    </MenuItem>
                 </div>
+                <div in:fly={{ x: 50, duration: 400, delay: 600 }} bind:this={cardRefs[1]} onmouseenter={() => { usingKeyboard = false; selectedCard = 1; }}>
+                    <MenuItem 
+                        title="WHAT'S HORIZON?" 
+                        selected={selectedCard === 1}
+                        preserveIcon
+                    >
+                        {#snippet icon()}
+                            <img src={faqIcon} alt="Watch" />
+                        {/snippet}
+                    </MenuItem>
+                </div>
+                <div in:fly={{ x: 50, duration: 400, delay: 700 }} bind:this={cardRefs[2]} onmouseenter={() => { usingKeyboard = false; selectedCard = 2; }}>
+                    <MenuItem 
+                        title="WATCH THE VIDEO" 
+                        selected={selectedCard === 2}
+                        preserveIcon
+                    >
+                        {#snippet icon()}
+                            <img src={playIcon} alt="Watch" />
+                        {/snippet}
+                    </MenuItem>
+                </div>
+            </div>
 
-            <div in:fly={{ y: 20, duration: 300, delay: 800 }} class="flex justify-center">
-                <BobaText text="USE  WASD  OR  YOUR  MOUSE" wave />
+            <div in:fly={{ y: 20, duration: 300, delay: 800 }} class="flex justify-center absolute bottom-32 left-0 right-0">
+                <BobaText text="USE  WASD  OR  YOUR  MOUSE" fontSize={36} wave />
             </div>
         </div>
     {/if}
@@ -290,70 +321,6 @@
         font-weight: 600;
         color: black;
         margin: 0;
-    }
-
-    .stripe-small :global(.stripe) {
-        height: 18px !important;
-    }
-
-    .input-field {
-        width: 100%;
-        padding: 8px 12px;
-        background: #f3e8d8;
-        border: 4px solid black;
-        border-radius: 8px;
-        box-shadow: 4px 4px 0px 0px black;
-        font-family: 'Agdasima', sans-serif;
-        font-size: 20px;
-        transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
-		outline: none;
-    }
-
-    .submit-btn {
-        width: 100%;
-        padding: 8px 12px;
-        background: #ffa936;
-        border: 4px solid black;
-        border-radius: 8px;
-        box-shadow: 4px 4px 0px 0px black;
-        font-family: 'Agdasima', sans-serif;
-        font-size: 20px;
-        cursor: pointer;
-        transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s ease;
-		outline: none;
-    }
-
-    .submit-btn.btn-selected, .submit-btn:hover, .submit-btn:focus {
-        border: 4px solid #ffa936;
-        transform: translate(2px, 2px);
-        box-shadow: 2px 2px 0px 0px black, inset 0px 0px 0px 4px black;
-    }
-
-    .submit-btn:active, .submit-btn.btn-selected:active {
-        transform: translate(4px, 4px);
-        box-shadow: 0px 0px 0px 0px black;
-    }
-
-    .input-field:focus, .input-selected {
-        border-color: #ffa936 !important;
-        transform: translate(4px, 4px);
-        box-shadow: 0px 0px 0px 0px black !important;
-    }
-
-    .input-wrapper {
-        position: relative;
-        width: 100%;
-    }
-
-    .exit-hint {
-        position: absolute;
-        right: 8px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-family: 'Agdasima', sans-serif;
-        font-size: 14px;
-        color: #666;
-        pointer-events: none;
     }
 </style>
 

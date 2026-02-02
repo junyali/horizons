@@ -2,15 +2,16 @@
 	interface Props {
 		class?: string;
 		outro?: boolean;
+		small?: boolean;
 	}
 
-	let { class: className = '', outro = false }: Props = $props();
+	let { class: className = '', outro = false, small = false }: Props = $props();
 </script>
 
-<div class="stripes flex flex-col gap-[10px] w-full {className}">
-	<div class="stripe h-[33px] bg-[#ffa936]" class:outro style="animation-delay: {outro ? '0ms' : '200ms'}"></div>
-	<div class="stripe h-[33px] bg-[#f86d95]" class:outro style="animation-delay: {outro ? '50ms' : '300ms'}"></div>
-	<div class="stripe h-[33px] bg-[#46467c]" class:outro style="animation-delay: {outro ? '100ms' : '400ms'}"></div>
+<div class="stripes flex flex-col w-full {className}" class:small style="gap: {small ? '5px' : '10px'}">
+	<div class="stripe bg-[#ffa936]" class:outro style="height: {small ? '17px' : '33px'}; animation-delay: {outro ? '0ms' : '200ms'}"></div>
+	<div class="stripe bg-[#f86d95]" class:outro style="height: {small ? '17px' : '33px'}; animation-delay: {outro ? '50ms' : '300ms'}"></div>
+	<div class="stripe bg-[#46467c]" class:outro style="height: {small ? '17px' : '33px'}; animation-delay: {outro ? '100ms' : '400ms'}"></div>
 </div>
 
 <style>

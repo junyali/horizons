@@ -19,11 +19,13 @@
     let measured = false;
 
     const chars = $derived(text.split(''));
+    const spacing = 8;
     const charPositions = $derived(() => {
-        let x = 5;
+        let x = 5 - (spacing * chars.length)/2;
         return chars.map((_, i) => {
             const pos = x;
             x += charWidths[i] || fontSize * 0.6;
+            x += spacing;
             return pos;
         });
     });
@@ -40,7 +42,7 @@
                 }
                 const elapsed = performance.now() - startTime;
                 waveOffsets = chars.map((_, i) => {
-                    return Math.sin((elapsed / 200) + (i * 0.5)) * 4;
+                    return Math.sin((elapsed / 220) + (i * 0.5)) * 4;
                 });
                 animationFrame = requestAnimationFrame(animate);
             }
@@ -56,7 +58,7 @@
         const el = measureEl || textEl;
         if (el && !measured) {
             const bbox = el.getBBox();
-            svgWidth = bbox.width + 20;
+            svgWidth = bbox.width + 22;
             
             if (wave) {
                 const tempWidths: number[] = [];
@@ -79,26 +81,26 @@
 </script>
 
 <div class="boba-container">
-    <svg width={svgWidth || 'auto'} height={fontSize + 20} overflow="visible" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width={svgWidth || 'auto'} height={fontSize + 22} overflow="visible" fill="none" xmlns="http://www.w3.org/2200/svg">
         <!-- Hidden measurement text -->
         {#if wave}
-            <text bind:this={measureEl} fill="black" stroke="#F9F3EB" style="white-space: pre; paint-order: stroke; opacity: 0; pointer-events: none;" stroke-width="6" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em"><tspan x="5" y={fontSize}>{text}</tspan></text>
+            <text bind:this={measureEl} fill="black" stroke="#F9F3EB" style="white-space: pre; paint-order: stroke; opacity: 0; pointer-events: none;" stroke-width="22" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em"><tspan x="5" y={fontSize}>{text}</tspan></text>
         {/if}
         
         {#if wave && charWidths.length > 0}
-            <text class="boba-shadow" class:pressed={pressed} stroke="black" style="white-space: pre; paint-order: stroke" stroke-width="10" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em">
+            <text class="boba-shadow" class:pressed={pressed} stroke="black" style="white-space: pre; paint-order: stroke" stroke-width="22" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em">
                 {#each chars as char, i}
                     <tspan x={charPositions()[i]} y={fontSize + (waveOffsets[i] || 0)}>{char}</tspan>
                 {/each}
             </text>
-            <text class="front" class:pressed={pressed} bind:this={textEl} fill="black" stroke={pressed ? '#FFA936' : '#F9F3EB'} style="white-space: pre; paint-order: stroke; transition: stroke 0.15s ease;" stroke-width="6" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em">
+            <text class="front" class:pressed={pressed} bind:this={textEl} fill="black" stroke={pressed ? '#FFA936' : '#F9F3EB'} style="white-space: pre; paint-order: stroke; transition: stroke 0.15s ease;" stroke-width="15" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em">
                 {#each chars as char, i}
                     <tspan x={charPositions()[i]} y={fontSize + (waveOffsets[i] || 0)}>{char}</tspan>
                 {/each}
             </text>
         {:else}
-            <text class="boba-shadow" class:pressed={pressed} stroke="black" style="white-space: pre; paint-order: stroke" stroke-width="10" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em"><tspan x="5" y={fontSize}>{text}</tspan></text>
-            <text class="front" class:pressed={pressed} bind:this={textEl} fill="black" stroke={pressed ? '#FFA936' : '#F9F3EB'} style="white-space: pre; paint-order: stroke; transition: stroke 0.15s ease;" stroke-width="6" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em"><tspan x="5" y={fontSize}>{text}</tspan></text>
+            <text class="boba-shadow" class:pressed={pressed} stroke="black" style="white-space: pre; paint-order: stroke" stroke-width="22" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em"><tspan x="5" y={fontSize}>{text}</tspan></text>
+            <text class="front" class:pressed={pressed} bind:this={textEl} fill="black" stroke={pressed ? '#FFA936' : '#F9F3EB'} style="white-space: pre; paint-order: stroke; transition: stroke 0.15s ease;" stroke-width="15" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em"><tspan x="5" y={fontSize}>{text}</tspan></text>
         {/if}
     </svg>
 </div>
