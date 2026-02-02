@@ -16,10 +16,9 @@
     let transitioning = $state(false);
     let stripesOutro = $state(false);
     let selectedCard = $state(1);
-    let selectedElement = $state(0); // 0 = card itself, 1+ = elements within card
-    let emailInput: HTMLInputElement;
-    let submitBtn: HTMLButtonElement;
-    let isInputFocused = $state(false);
+    let selectedElement = $state(-1); // -1 = card itself, 0+ = index within focusable elements
+    let cardRefs: HTMLElement[] = [];
+    let isTyping = $state(false);
 
     let logoRect: DOMRect | null = $state(null);
     let stripesRect: DOMRect | null = $state(null);
@@ -78,11 +77,95 @@
         }, 600);
     }
 
+    function getFocusableElements(cardIndex: number): HTMLElement[] {
+        const card = cardRefs[cardIndex];
+        if (!card) return [];
+        return Array.from(card.querySelectorAll('input, button, [tabindex]:not([tabindex="-1"])'));
+    }
+
     function focusSelectedElement() {
-        if (selectedCard === 1) {
-            if (selectedElement === 1) emailInput?.focus();
-            else if (selectedElement === 2) submitBtn?.focus();
-            else emailInput?.blur();
+        const elements = getFocusableElements(selectedCard);
+        if (selectedElement >= 0 && selectedElement < elements.length) {
+            elements[selectedElement]?.focus();
+        } else {
+            (document.activeElement as HTMLElement)?.blur();
+        }
+    }
+
+    function handleElementFocus(ev: FocusEvent) {
+        const target = ev.target as HTMLElement;
+        const elements = getFocusableElements(selectedCard);
+        const index = elements.indexOf(target);
+        if (index >= 0) {
+            selectedElement = index;
+        }
+        if (target.tagName === 'INPUT') {
+            isTyping = true;
+        }
+    }
+
+    function handleElementBlur(ev: FocusEvent) {
+        isTyping = false;
+        const container = cardRefs[selectedCard];
+        const relatedTarget = ev.relatedTarget as HTMLElement;
+        if (!container?.contains(relatedTarget)) {
+            selectedElement = -1;
+        }
+    }
+
+    function handleElementKeydown(ev: KeyboardEvent) {
+        const elements = getFocusableElements(selectedCard);
+        const isInput = (ev.target as HTMLElement).tagName === 'INPUT';
+        
+        if (isInput && ev.key !== 'Enter' && ev.key !== 'Tab' && ev.key !== 'Escape') {
+            return; // Allow typing in inputs
+        }
+
+        if (ev.key === 'Enter' || ev.key === 'Tab') {
+            if (selectedElement < elements.length - 1) {
+                ev.preventDefault();
+                selectedElement++;
+                focusSelectedElement();
+            } else if (ev.key === 'Tab' && !ev.shiftKey) {
+                ev.preventDefault();
+                selectedElement = -1;
+                selectedCard = Math.min(2, selectedCard + 1);
+                (document.activeElement as HTMLElement)?.blur();
+            }
+        } else if ((ev.key === 'Tab' && ev.shiftKey) || ev.key === 'Escape') {
+            ev.preventDefault();
+            if (selectedElement > 0) {
+                selectedElement--;
+                focusSelectedElement();
+            } else {
+                selectedElement = -1;
+                (document.activeElement as HTMLElement)?.blur();
+            }
+        } else if (ev.key === 'w' || ev.key === 'W' || ev.key === 'ArrowUp') {
+            ev.preventDefault();
+            if (selectedElement > 0) {
+                selectedElement--;
+                focusSelectedElement();
+            } else {
+                selectedElement = -1;
+                (document.activeElement as HTMLElement)?.blur();
+            }
+        } else if (ev.key === 's' || ev.key === 'S' || ev.key === 'ArrowDown') {
+            ev.preventDefault();
+            if (selectedElement < elements.length - 1) {
+                selectedElement++;
+                focusSelectedElement();
+            }
+        } else if (ev.key === 'a' || ev.key === 'A' || ev.key === 'ArrowLeft') {
+            ev.preventDefault();
+            selectedElement = -1;
+            selectedCard = Math.max(0, selectedCard - 1);
+            (document.activeElement as HTMLElement)?.blur();
+        } else if (ev.key === 'd' || ev.key === 'D' || ev.key === 'ArrowRight') {
+            ev.preventDefault();
+            selectedElement = -1;
+            selectedCard = Math.min(2, selectedCard + 1);
+            (document.activeElement as HTMLElement)?.blur();
         }
     }
 
@@ -95,29 +178,23 @@
                     setTimeout(showDetail, 400);
                 }
             } else {
-                const isTyping = document.activeElement === emailInput;
                 if (isTyping) return;
+                if (selectedElement >= 0) return; // Let element handlers deal with it
 
-                const maxElements = selectedCard === 1 ? 2 : 0; // JOIN NOW has 2 elements (input, button)
+                const elements = getFocusableElements(selectedCard);
                 
                 if (ev.key === 'a' || ev.key === 'A' || ev.key === 'ArrowLeft') {
-                    if (selectedElement === 0) {
-                        selectedCard = Math.max(0, selectedCard - 1);
-                        selectedElement = 0;
-                    }
+                    selectedCard = Math.max(0, selectedCard - 1);
+                    selectedElement = -1;
                 } else if (ev.key === 'd' || ev.key === 'D' || ev.key === 'ArrowRight') {
-                    if (selectedElement === 0) {
-                        selectedCard = Math.min(2, selectedCard + 1);
+                    selectedCard = Math.min(2, selectedCard + 1);
+                    selectedElement = -1;
+                } else if (ev.key === 's' || ev.key === 'S' || ev.key === 'ArrowDown' || ev.key === 'Enter') {
+                    if (elements.length > 0) {
+                        ev.preventDefault();
                         selectedElement = 0;
+                        focusSelectedElement();
                     }
-                } else if (ev.key === 'w' || ev.key === 'W' || ev.key === 'ArrowUp') {
-                    ev.preventDefault();
-                    selectedElement = Math.max(0, selectedElement - 1);
-                    focusSelectedElement();
-                } else if (ev.key === 's' || ev.key === 'S' || ev.key === 'ArrowDown') {
-                    ev.preventDefault();
-                    selectedElement = Math.min(maxElements, selectedElement + 1);
-                    focusSelectedElement();
                 }
             }
         };
@@ -141,7 +218,7 @@
 
             {#if !stripesOutro}
                 <div class="flex flex-col items-center justify-center px-16 mt-8" out:fade={{ duration: 300, delay: 100 }}>
-                    <BobaButton text="> PRESS ENTER" fallbackWidth={260} {pressed} className="pointer-events-none select-none" />
+                    <BobaButton text="> PRESS ENTER" fallbackWidth={260} {pressed} className="pointer-events-none select-none" wave />
                 </div>
             {/if}
         </div>
@@ -161,38 +238,34 @@
             </div>
 
             <div class="flex justify-center items-center gap-8 px-10 h-[435px]">
-                    <div in:fly={{ y: 50, duration: 400, delay: 500 }} class="h-full">
-                        <Card title="WATCH THE VIDEO" selected={selectedCard === 0} class="w-80 h-full" />
+                    <div in:fly={{ y: 50, duration: 400, delay: 500 }} class="h-full" bind:this={cardRefs[0]}>
+                        <Card title="WATCH THE VIDEO" selected={selectedCard === 0 && selectedElement === -1} class="w-80 h-full" />
                     </div>
-                    <div in:fly={{ y: 50, duration: 400, delay: 600 }} class="h-full">
-                        <Card title="JOIN NOW" highlighted selected={selectedCard === 1 && selectedElement === 0} class="w-[437px] h-full gap-4">
-                            <div class="w-full flex flex-col gap-5">
+                    <div in:fly={{ y: 50, duration: 400, delay: 600 }} class="h-full" bind:this={cardRefs[1]}>
+                        <Card title="JOIN NOW" highlighted selected={selectedCard === 1 && selectedElement === -1} class="w-[437px] h-full gap-4">
+                            <div class="w-full flex flex-col gap-5" role="group" onfocusin={handleElementFocus} onfocusout={handleElementBlur} onkeydown={handleElementKeydown}>
                                 <div class="input-wrapper">
                                     <input 
-                                        bind:this={emailInput} 
                                         type="email" 
                                         placeholder="orpheus@hackclub.com" 
                                         class="input-field" 
-                                        class:input-selected={selectedCard === 1 && selectedElement === 1}
-                                        onfocus={() => { selectedElement = 1; isInputFocused = true; }}
-                                        onblur={() => { isInputFocused = false; }}
-                                        onkeydown={(ev) => { if (ev.key === 'Enter') { ev.preventDefault(); selectedElement = 2; submitBtn?.focus(); } }}
+                                        class:input-selected={selectedCard === 1 && selectedElement === 0}
                                     />
-                                    {#if isInputFocused}
+                                    {#if isTyping}
                                         <span class="exit-hint">Press Enter to continue</span>
                                     {/if}
                                 </div>
-                                <button bind:this={submitBtn} class="submit-btn" class:btn-selected={selectedCard === 1 && selectedElement === 2}>CONTINUE WITH HACK CLUB AUTH</button>
+                                <button class="submit-btn" class:btn-selected={selectedCard === 1 && selectedElement === 1}>CONTINUE WITH HACK CLUB AUTH</button>
                             </div>
                         </Card>
                     </div>
-                    <div in:fly={{ y: 50, duration: 400, delay: 700 }} class="h-full">
-                        <Card title="FAQ" selected={selectedCard === 2} class="w-80 h-full" />
+                    <div in:fly={{ y: 50, duration: 400, delay: 700 }} class="h-full" bind:this={cardRefs[2]}>
+                        <Card title="FAQ" selected={selectedCard === 2 && selectedElement === -1} class="w-80 h-full" />
                     </div>
                 </div>
 
             <div in:fly={{ y: 20, duration: 300, delay: 800 }} class="flex justify-center">
-                <BobaText text="USE WASD OR YOUR MOUSE" />
+                <BobaText text="USE WASD OR YOUR MOUSE" wave />
             </div>
         </div>
     {/if}
