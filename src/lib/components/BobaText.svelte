@@ -5,9 +5,10 @@
         text?: string;
         fontSize?: number;
         wave?: boolean;
+        pressed?: boolean
     }
 
-    let { text = ">PRESS ENTER", fontSize = 32, wave = false }: Props = $props();
+    let { text = ">PRESS ENTER", fontSize = 32, wave = false, pressed = false }: Props = $props();
 
     let textEl: SVGTextElement;
     let measureEl: SVGTextElement;
@@ -33,6 +34,10 @@
         if (wave) {
             let startTime = performance.now();
             function animate() {
+                if (pressed) {
+                    waveOffsets = chars.map(() => 0);
+                    return;
+                }
                 const elapsed = performance.now() - startTime;
                 waveOffsets = chars.map((_, i) => {
                     return Math.sin((elapsed / 200) + (i * 0.5)) * 4;
@@ -81,19 +86,19 @@
         {/if}
         
         {#if wave && charWidths.length > 0}
-            <text class="boba-shadow" stroke="black" style="white-space: pre; paint-order: stroke" stroke-width="10" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em">
+            <text class="boba-shadow" class:pressed={pressed} stroke="black" style="white-space: pre; paint-order: stroke" stroke-width="10" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em">
                 {#each chars as char, i}
                     <tspan x={charPositions()[i]} y={fontSize + (waveOffsets[i] || 0)}>{char}</tspan>
                 {/each}
             </text>
-            <text class="front" bind:this={textEl} fill="black" stroke="#F9F3EB" style="white-space: pre; paint-order: stroke" stroke-width="6" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em">
+            <text class="front" class:pressed={pressed} bind:this={textEl} fill="black" stroke={pressed ? '#FFA936' : '#F9F3EB'} style="white-space: pre; paint-order: stroke; transition: stroke 0.15s ease;" stroke-width="6" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em">
                 {#each chars as char, i}
                     <tspan x={charPositions()[i]} y={fontSize + (waveOffsets[i] || 0)}>{char}</tspan>
                 {/each}
             </text>
         {:else}
-            <text class="boba-shadow" stroke="black" style="white-space: pre; paint-order: stroke" stroke-width="10" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em"><tspan x="5" y={fontSize}>{text}</tspan></text>
-            <text class="front" bind:this={textEl} fill="black" stroke="#F9F3EB" style="white-space: pre; paint-order: stroke" stroke-width="6" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em"><tspan x="5" y={fontSize}>{text}</tspan></text>
+            <text class="boba-shadow" class:pressed={pressed} stroke="black" style="white-space: pre; paint-order: stroke" stroke-width="10" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em"><tspan x="5" y={fontSize}>{text}</tspan></text>
+            <text class="front" class:pressed={pressed} bind:this={textEl} fill="black" stroke={pressed ? '#FFA936' : '#F9F3EB'} style="white-space: pre; paint-order: stroke; transition: stroke 0.15s ease;" stroke-width="6" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em"><tspan x="5" y={fontSize}>{text}</tspan></text>
         {/if}
     </svg>
 </div>
@@ -114,8 +119,18 @@
         transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.15s ease;
     }
 
+    .boba-shadow.pressed {
+        -webkit-filter: drop-shadow( 0px 0px 0px rgba(0, 0, 0, 1));
+        filter: drop-shadow( 0px 0px 0px rgba(0, 0, 0, 1));
+
+        transform: translate(3px, 3px);
+    }
+
     .front {
     	transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-    </style>
+    .front.pressed {
+        transform: translate(3px, 3px);
+    }
+</style>

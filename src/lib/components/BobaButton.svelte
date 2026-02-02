@@ -6,14 +6,13 @@
         text?: string;
         fontSize?: number;
         className?: string;
-        sunken?: boolean;
         pressed?: boolean;
         blink?: boolean;
         wave?: boolean;
         fallbackWidth?: number;
     }
 
-    let { text = ">PRESS ENTER", fontSize = 32, sunken = false, fallbackWidth = 0, pressed = false, blink = true, wave = false, className = "", ...rest }: Props = $props();
+    let { text = ">PRESS ENTER", fontSize = 32, fallbackWidth = 0, pressed = false, blink = true, wave = false, className = "", ...rest }: Props = $props();
 
     let buttonEl: HTMLButtonElement;
 
@@ -22,8 +21,8 @@
     }
 </script>
 
-<button bind:this={buttonEl} class="boba-container {className}" class:pressed class:blink class:sunken {...rest}>
-    <BobaText {text} {fontSize} {wave} />
+<button bind:this={buttonEl} class="boba-container {className}" class:blink {...rest}>
+    <BobaText {text} {fontSize} {wave} {pressed} />
 </button>
 
 <style>
@@ -51,26 +50,5 @@
         50% {
             opacity: 0.4;
         }
-    }
-
-    .boba-container :global(svg) {
-        display: block;
-        transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.15s ease;
-    }
-
-    .boba-container:hover :global(svg),
-    .boba-container:focus :global(svg) {
-        transform: translate(-3px, -3px);
-        filter: drop-shadow(6px 6px 0px rgba(0, 0, 0, 1));
-    }
-
-    .boba-container:active :global(svg),
-    .boba-container.pressed :global(svg) {
-        transform: translate(3px, 3px);
-        filter: drop-shadow(0px 0px 0px rgba(0, 0, 0, 1));
-    }
-
-    .boba-container:focus {
-        outline: none;
     }
 </style>

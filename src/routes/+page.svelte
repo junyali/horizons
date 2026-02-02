@@ -19,6 +19,7 @@
     let selectedElement = $state(-1); // -1 = card itself, 0+ = index within focusable elements
     let cardRefs: HTMLElement[] = [];
     let isTyping = $state(false);
+    let btnPressed = $state(false);
 
     let logoRect: DOMRect | null = $state(null);
     let stripesRect: DOMRect | null = $state(null);
@@ -121,12 +122,21 @@
             return; // Allow typing in inputs
         }
 
-        if (ev.key === 'Enter' || ev.key === 'Tab') {
+        if (ev.key === 'Enter') {
+            if (isInput && selectedElement < elements.length - 1) {
+                ev.preventDefault();
+                selectedElement++;
+                focusSelectedElement();
+            } else if (!isInput) {
+                btnPressed = true;
+                setTimeout(() => { btnPressed = false; }, 150);
+            }
+        } else if (ev.key === 'Tab') {
             if (selectedElement < elements.length - 1) {
                 ev.preventDefault();
                 selectedElement++;
                 focusSelectedElement();
-            } else if (ev.key === 'Tab' && !ev.shiftKey) {
+            } else if (!ev.shiftKey) {
                 ev.preventDefault();
                 selectedElement = -1;
                 selectedCard = Math.min(2, selectedCard + 1);
@@ -174,8 +184,10 @@
             if (!activated) {
                 if (ev.key === 'Enter' && !stripesOutro) {
                     pressed = true;
-                    stripesOutro = true;
-                    setTimeout(showDetail, 400);
+                    setTimeout(() => {
+                        stripesOutro = true;
+                        setTimeout(showDetail, 400);
+                    }, 150);
                 }
             } else {
                 if (isTyping) return;
@@ -218,7 +230,7 @@
 
             {#if !stripesOutro}
                 <div class="flex flex-col items-center justify-center px-16 mt-8" out:fade={{ duration: 300, delay: 100 }}>
-                    <BobaButton text="> PRESS ENTER" fallbackWidth={260} {pressed} className="pointer-events-none select-none" wave />
+                    <BobaButton text="> PRESS  ENTER" fallbackWidth={260} {pressed} className="pointer-events-none select-none" wave />
                 </div>
             {/if}
         </div>
@@ -255,7 +267,7 @@
                                         <span class="exit-hint">Press Enter to continue</span>
                                     {/if}
                                 </div>
-                                <button class="submit-btn" class:btn-selected={selectedCard === 1 && selectedElement === 1}>CONTINUE WITH HACK CLUB AUTH</button>
+                                <button class="submit-btn" class:btn-selected={selectedCard === 1 && selectedElement === 1} class:btn-pressed={btnPressed}>CONTINUE WITH HACK CLUB AUTH</button>
                             </div>
                         </Card>
                     </div>
@@ -265,7 +277,7 @@
                 </div>
 
             <div in:fly={{ y: 20, duration: 300, delay: 800 }} class="flex justify-center">
-                <BobaText text="USE WASD OR YOUR MOUSE" wave />
+                <BobaText text="USE  WASD  OR  YOUR  MOUSE" wave />
             </div>
         </div>
     {/if}
@@ -311,9 +323,13 @@
 		outline: none;
     }
 
-    .submit-btn.btn-selected, .submit-btn:hover, .submit-btn:focus, .submit-btn:active {
-        outline: 3px solid #ffa936;
-        outline-offset: 2px;
+    .submit-btn.btn-selected, .submit-btn:hover, .submit-btn:focus {
+        border: 4px solid #ffa936;
+        transform: translate(2px, 2px);
+        box-shadow: 2px 2px 0px 0px black, inset 0px 0px 0px 4px black;
+    }
+
+    .submit-btn:active, .submit-btn.btn-selected:active {
         transform: translate(4px, 4px);
         box-shadow: 0px 0px 0px 0px black;
     }
