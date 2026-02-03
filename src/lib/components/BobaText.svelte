@@ -17,7 +17,7 @@
     let measureEl: SVGTextElement;
     let svgWidth = $state(0);
     let charWidths = $state<number[]>([]);
-    let waveOffsets = $state<number[]>([]);
+    let waveTime = $state(0);
     let animationFrame: number;
     let measured = false;
 
@@ -33,20 +33,20 @@
         });
     });
 
+    function getWaveOffset(i: number): number {
+        if (pressed) return 0;
+        return Math.sin((waveTime / 400) + (i * 0.2)) * 3;
+    }
+
     onMount(() => {
         updateWidth();
         
         if (shouldWave) {
             let startTime = performance.now();
             function animate() {
-                if (pressed) {
-                    waveOffsets = chars.map(() => 0);
-                    return;
+                if (!pressed) {
+                    waveTime = performance.now() - startTime;
                 }
-                const elapsed = performance.now() - startTime;
-                waveOffsets = chars.map((_, i) => {
-                    return Math.sin((elapsed / 220) + (i * 0.5)) * 4;
-                });
                 animationFrame = requestAnimationFrame(animate);
             }
             animate();
@@ -91,12 +91,12 @@
         {#if shouldWave && charWidths.length > 0}
             <text class="boba-shadow" class:pressed={pressed} stroke="black" style="white-space: pre; paint-order: stroke" stroke-width="22" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em">
                 {#each chars as char, i}
-                    <tspan x={charPositions()[i]} y={fontSize + (waveOffsets[i] || 0)}>{char}</tspan>
+                    <tspan x={charPositions()[i]} y={fontSize + getWaveOffset(i)}>{char}</tspan>
                 {/each}
             </text>
             <text class="front" class:pressed={pressed} bind:this={textEl} fill="black" stroke={pressed ? '#FFA936' : '#F9F3EB'} style="white-space: pre; paint-order: stroke; transition: stroke 0.15s ease;" stroke-width="15" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em">
                 {#each chars as char, i}
-                    <tspan x={charPositions()[i]} y={fontSize + (waveOffsets[i] || 0)}>{char}</tspan>
+                    <tspan x={charPositions()[i]} y={fontSize + getWaveOffset(i)}>{char}</tspan>
                 {/each}
             </text>
         {:else}
