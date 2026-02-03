@@ -351,9 +351,17 @@
                 </div>
             </div>
 
-            <div in:fly={{ y: disableAnimations ? 0 : 20, duration: disableAnimations ? 0 : 300, delay: disableAnimations ? 0 : 800 }} class="flex justify-center absolute bottom-24 left-0 right-0">
+            <div in:fly={{ y: disableAnimations ? 0 : 20, duration: disableAnimations ? 0 : 300, delay: disableAnimations ? 0 : 800 }} class="flex justify-center absolute bottom-20 left-0 right-0">
                 <BobaText text="USE  WASD  OR  YOUR  MOUSE" fontSize={36} wave {disableAnimations} />
             </div>
+
+            <button 
+                in:fly={{ y: disableAnimations ? 0 : 20, duration: disableAnimations ? 0 : 300, delay: disableAnimations ? 0 : 900 }}
+                class="absolute bottom-6 left-6 bg-transparent border-none cursor-pointer opacity-60 hover:opacity-100 transition-opacity duration-200"
+                onclick={() => { activated = false; stripesOutro = false; }}
+            >
+                <BobaText text="< BACK" fontSize={24} {disableAnimations} />
+            </button>
         </div>
     {/if}
 </BG>
