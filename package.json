@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently -n \"GATEWAY,UNIFIED-API,UI\" -c \"cyan,magenta,yellow\" \"pnpm --filter gateway dev\" \"pnpm --filter unified-service dev\" \"pnpm --filter lark-ui dev\"",
+    "dev": "concurrently -n \"GATEWAY,UNIFIED-API,UI\" -c \"cyan,magenta,yellow\" \"pnpm --filter gateway dev\" \"pnpm --filter backend dev\" \"pnpm --filter frontend dev\"",
     "build": "pnpm -r build",
     "clean": "pnpm -r clean"
   },
@@ -17,5 +17,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.19.0"
+  "packageManager": "pnpm@10.19.0",
+  "workspaces": ["frontend", "backend", "gateway"]
 }
