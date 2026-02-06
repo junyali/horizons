@@ -26,7 +26,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/prisma ./prisma
-COPY backend/templates ./templates
+# COPY backend/templates ./templates
 
 EXPOSE 3002
 
