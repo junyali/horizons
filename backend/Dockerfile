@@ -18,7 +18,7 @@ WORKDIR /app
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY backend/package.json ./backend/
 RUN pnpm install --frozen-lockfile --filter backend --prod
-COPY --from=builder  /app/backend/prisma/generated  ./backend/prisma/generated
+COPY --from=builder /app/backend/generated ./backend/generated
 
 FROM base AS runner
 WORKDIR /app
