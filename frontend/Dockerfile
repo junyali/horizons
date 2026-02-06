@@ -15,7 +15,13 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 COPY --from=builder /app/frontend/build ./build
+COPY --from=builder /app/frontend/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
+
+RUN pnpm install --prod --frozen-lockfile
 
 ENV NODE_ENV=production
 ENV PORT=3000
