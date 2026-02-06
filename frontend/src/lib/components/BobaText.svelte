@@ -72,14 +72,14 @@
         
         {#if shouldWave && charWidths.length > 0}
             {#each chars as char, i}
-                <g class="boba-shadow wave-char" class:pressed={pressed} style="animation-delay: {i * 0.08}s">
+                <g class="boba-shadow wave-char" class:pressed={pressed} style="animation-delay: {-i * 0.08}s">
                     <text stroke="black" style="white-space: pre; paint-order: stroke" stroke-width="22" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em">
                         <tspan x={charPositions()[i]} y={fontSize}>{char}</tspan>
                     </text>
                 </g>
             {/each}
             {#each chars as char, i}
-                <g class="front wave-char" class:pressed={pressed} style="animation-delay: {i * 0.08}s">
+                <g class="front wave-char" class:pressed={pressed} style="animation-delay: {-i * 0.08}s">
                     <text fill="black" stroke={pressed ? '#FFA936' : '#F9F3EB'} style="white-space: pre; paint-order: stroke; transition: stroke 0.15s ease;" stroke-width="15" stroke-linejoin="round" xml:space="preserve" font-family="Cook Widetype" font-size={fontSize} font-weight="600" letter-spacing="0em">
                         <tspan x={charPositions()[i]} y={fontSize}>{char}</tspan>
                     </text>
