@@ -6,12 +6,13 @@ import { UpdateItemDto } from './dto/update-item.dto';
 import { PurchaseItemDto } from './dto/purchase-item.dto';
 import { CreateVariantDto } from './dto/create-variant.dto';
 import { UpdateVariantDto } from './dto/update-variant.dto';
-import { AuthGuard } from '../auth/auth.guard';
+import { Public } from '../auth/public.decorator';
 import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../decorators/roles.decorator';
 import { Role } from '../enums/role.enum';
 
 @Controller('api/shop')
+@Public()
 export class ShopController {
   constructor(private shopService: ShopService) {}
 
@@ -27,7 +28,6 @@ export class ShopController {
 }
 
 @Controller('api/shop/auth')
-@UseGuards(AuthGuard)
 export class ShopAuthController {
   constructor(private shopService: ShopService) {}
 
@@ -48,7 +48,7 @@ export class ShopAuthController {
 }
 
 @Controller('api/shop/admin')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Roles(Role.Admin)
 export class ShopAdminController {
   constructor(private shopService: ShopService) {}

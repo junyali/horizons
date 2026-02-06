@@ -1,13 +1,14 @@
-import { Controller, Post, Get, Put, Delete, Body, Param, UseGuards, Req, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete, Body, Param, Req, ParseIntPipe, Query } from '@nestjs/common';
 import { Request } from 'express';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { CreateSubmissionDto } from './dto/create-submission.dto';
 import { UpdateHackatimeProjectsDto } from './dto/update-hackatime-projects.dto';
-import { AuthGuard } from '../auth/auth.guard';
+import { Public } from '../auth/public.decorator';
 
 @Controller('api/projects')
+@Public()
 export class ProjectsController {
   constructor(private projectsService: ProjectsService) {}
 
@@ -24,7 +25,6 @@ export class ProjectsController {
 }
 
 @Controller('api/projects/auth')
-@UseGuards(AuthGuard)
 export class ProjectsAuthController {
   constructor(private projectsService: ProjectsService) {}
 

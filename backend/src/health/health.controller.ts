@@ -1,6 +1,8 @@
 import { Controller, Get, Post, Body, HttpCode } from '@nestjs/common';
+import { Public } from '../auth/public.decorator';
 
 @Controller()
+@Public()
 export class HealthController {
   constructor() {}
 

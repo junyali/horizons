@@ -1,12 +1,13 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { GiftCodesService } from './gift-codes.service';
 import { SendGiftCodesDto } from './dto/send-gift-codes.dto';
-import { AuthGuard } from '../auth/auth.guard';
+import { Public } from '../auth/public.decorator';
 import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../decorators/roles.decorator';
 import { Role } from '../enums/role.enum';
 
 @Controller('api/gift-codes')
+@Public()
 export class GiftCodesController {
   constructor(private giftCodesService: GiftCodesService) {}
 
@@ -22,7 +23,7 @@ export class GiftCodesController {
 }
 
 @Controller('api/admin/gift-codes')
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(RolesGuard)
 @Roles(Role.Admin)
 export class GiftCodesAdminController {
   constructor(private giftCodesService: GiftCodesService) {}

@@ -3,13 +3,11 @@ import { Request } from 'express';
 import { EditRequestsService } from './edit-requests.service';
 import { CreateEditRequestDto } from './dto/create-edit-request.dto';
 import { UpdateEditRequestDto } from './dto/update-edit-request.dto';
-import { AuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
 
 @Controller('api/edit-requests')
-@UseGuards(AuthGuard)
 export class EditRequestsController {
   constructor(private editRequestsService: EditRequestsService) {}
 

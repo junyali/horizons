@@ -2,13 +2,11 @@ import { Controller, Get, Put, Body, Param, UseGuards, Req, ParseIntPipe, Delete
 import { Request } from 'express';
 import { AdminService } from './admin.service';
 import { UpdateSubmissionDto } from './dto/update-submission.dto';
-import { AuthGuard } from '../auth/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/enums/role.enum';
 
 @Controller('api/admin')
-@UseGuards(AuthGuard)
 export class AdminController {
   constructor(private adminService: AdminService) {}
 

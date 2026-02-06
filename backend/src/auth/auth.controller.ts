@@ -1,9 +1,9 @@
-import { Controller, Post, Body, Get, UseGuards, Req, Res, Query } from '@nestjs/common';
+import { Controller, Post, Body, Get, Req, Res, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiQuery } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { AuthGuard } from './auth.guard';
+import { Public } from './public.decorator';
 import {
   AuthUrlResponse,
   AuthCallbackResponse,
@@ -23,6 +23,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Get('login')
+  @Public()
   @ApiOperation({ summary: 'Get HCA OAuth login URL' })
   @ApiQuery({ name: 'referralCode', required: false })
   @ApiQuery({ name: 'email', required: false })
@@ -35,6 +36,7 @@ export class AuthController {
   }
 
   @Get('callback')
+  @Public()
   @ApiOperation({ summary: 'Handle HCA OAuth callback and redirect to app' })
   @ApiQuery({ name: 'code', required: true })
   @ApiQuery({ name: 'state', required: false })
@@ -70,14 +72,12 @@ export class AuthController {
 
   @Get('me')
   @SkipThrottle()
-  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Get current user' })
   async getCurrentUser(@Req() req: Request) {
     return this.authService.getCurrentUser(req.cookies.sessionId);
   }
 
   @Post('verify-session')
-  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Verify current session' })
   async verifySession(@Req() req: Request) {
     const sessionId = req.cookies.sessionId;
@@ -85,7 +85,6 @@ export class AuthController {
   }
 
   @Post('logout')
-  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Logout and clear session' })
   @ApiOkResponse({ type: LogoutResponse })
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<LogoutResponse> {
@@ -106,7 +105,6 @@ export class AuthController {
   }
 
   @Post('complete-onboarding')
-  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Mark onboarding as complete' })
   @ApiOkResponse({ type: CompleteOnboardingResponse })
   async completeOnboarding(@Req() req: Request): Promise<CompleteOnboardingResponse> {
@@ -115,7 +113,6 @@ export class AuthController {
   }
 
   @Get('onboarding-status')
-  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Get onboarding status' })
   @ApiOkResponse({ type: OnboardingStatusResponse })
   async getOnboardingStatus(@Req() req: Request): Promise<OnboardingStatusResponse> {
@@ -124,7 +121,6 @@ export class AuthController {
   }
 
   @Post('hackatime-link/send-otp')
-  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Send OTP to link Hackatime account' })
   @ApiOkResponse({ type: SendHackatimeLinkOtpResponse })
   async sendHackatimeLinkOtp(@Req() req: Request, @Body() body: { email: string }): Promise<SendHackatimeLinkOtpResponse> {
@@ -133,7 +129,6 @@ export class AuthController {
   }
 
   @Post('hackatime-link/verify-otp')
-  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Verify OTP to link Hackatime account' })
   @ApiOkResponse({ type: VerifyHackatimeLinkOtpResponse })
   async verifyHackatimeLinkOtp(@Req() req: Request, @Body() body: { otp: string }): Promise<VerifyHackatimeLinkOtpResponse> {
@@ -142,7 +137,6 @@ export class AuthController {
   }
 
   @Get('raffle-pos')
-  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Get raffle position' })
   @ApiOkResponse({ type: RafflePosResponse })
   async getRafflePos(@Req() req: Request): Promise<RafflePosResponse> {

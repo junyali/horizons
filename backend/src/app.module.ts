@@ -13,6 +13,8 @@ import { UploadsModule } from "./uploads/uploads.module";
 import { ShopModule } from "./shop/shop.module";
 import { GiftCodesModule } from "./gift-codes/gift-codes.module";
 import { SlackModule } from "./slack/slack.module";
+import { AuthGuard } from "./auth/auth.guard";
+import { PrismaService } from "./prisma.service";
 
 @Module({
   imports: [
@@ -34,9 +36,14 @@ import { SlackModule } from "./slack/slack.module";
     SlackModule
   ],
   providers: [
+    PrismaService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
     },
   ],
 })
