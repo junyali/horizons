@@ -16,6 +16,7 @@
     import CircleOut from '$lib/components/anim/CircleOut.svelte';
     import { api } from '$lib/api';
     import { goto } from '$app/navigation';
+    import { parseNavKey, isNavKey, clampIndex } from '$lib/nav/wasd.svelte';
 
     let activated = $state(false);
     let pressed = $state(false);
@@ -175,7 +176,7 @@
     function handleElementKeydown(ev: KeyboardEvent) {
         const elements = getFocusableElements(selectedCard);
         const isInput = (ev.target as HTMLElement).tagName === 'INPUT';
-        
+
         if (isInput && ev.key !== 'Enter' && ev.key !== 'Tab' && ev.key !== 'Escape') {
             return; // Allow typing in inputs
         }
@@ -189,7 +190,10 @@
                 btnPressed = true;
                 setTimeout(() => { btnPressed = false; }, 150);
             }
-        } else if (ev.key === 'Tab') {
+            return;
+        }
+
+        if (ev.key === 'Tab') {
             if (selectedElement < elements.length - 1) {
                 ev.preventDefault();
                 selectedElement++;
@@ -197,10 +201,13 @@
             } else if (!ev.shiftKey) {
                 ev.preventDefault();
                 selectedElement = -1;
-                selectedCard = Math.min(2, selectedCard + 1);
+                selectedCard = clampIndex(selectedCard + 1, 2);
                 (document.activeElement as HTMLElement)?.blur();
             }
-        } else if ((ev.key === 'Tab' && ev.shiftKey) || ev.key === 'Escape') {
+            return;
+        }
+
+        if ((ev.key === 'Tab' && ev.shiftKey) || ev.key === 'Escape') {
             ev.preventDefault();
             if (selectedElement > 0) {
                 selectedElement--;
@@ -209,8 +216,14 @@
                 selectedElement = -1;
                 (document.activeElement as HTMLElement)?.blur();
             }
-        } else if (ev.key === 'w' || ev.key === 'W' || ev.key === 'ArrowUp') {
-            ev.preventDefault();
+            return;
+        }
+
+        const dir = parseNavKey(ev.key);
+        if (!dir) return;
+        ev.preventDefault();
+
+        if (dir === 'up') {
             if (selectedElement > 0) {
                 selectedElement--;
                 focusSelectedElement();
@@ -218,29 +231,25 @@
                 selectedElement = -1;
                 (document.activeElement as HTMLElement)?.blur();
             }
-        } else if (ev.key === 's' || ev.key === 'S' || ev.key === 'ArrowDown') {
-            ev.preventDefault();
+        } else if (dir === 'down') {
             if (selectedElement < elements.length - 1) {
                 selectedElement++;
                 focusSelectedElement();
             }
-        } else if (ev.key === 'a' || ev.key === 'A' || ev.key === 'ArrowLeft') {
-            ev.preventDefault();
+        } else if (dir === 'left') {
             selectedElement = -1;
-            selectedCard = Math.max(0, selectedCard - 1);
+            selectedCard = clampIndex(selectedCard - 1, 2);
             (document.activeElement as HTMLElement)?.blur();
-        } else if (ev.key === 'd' || ev.key === 'D' || ev.key === 'ArrowRight') {
-            ev.preventDefault();
+        } else if (dir === 'right') {
             selectedElement = -1;
-            selectedCard = Math.min(2, selectedCard + 1);
+            selectedCard = clampIndex(selectedCard + 1, 2);
             (document.activeElement as HTMLElement)?.blur();
         }
     }
 
     onMount(() => {
         window.onkeydown = (ev) => {
-            // Switch to keyboard mode on navigation keys
-            if (['w', 'W', 's', 'S', 'a', 'A', 'd', 'D', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Tab', 'Escape'].includes(ev.key)) {
+            if (isNavKey(ev.key)) {
                 usingKeyboard = true;
             }
 
@@ -252,27 +261,28 @@
                         setTimeout(showDetail, 400);
                     }, 150);
                 }
-            } else {
-                if (isTyping) return;
-                if (selectedElement >= 0) return; // Let element handlers deal with it
+                return;
+            }
 
+            if (isTyping) return;
+            if (selectedElement >= 0) return; // Let element handlers deal with it
+
+            const dir = parseNavKey(ev.key);
+            if (dir === 'up') {
+                selectedCard = clampIndex(selectedCard - 1, 2);
+                selectedElement = -1;
+            } else if (dir === 'down') {
+                selectedCard = clampIndex(selectedCard + 1, 2);
+                selectedElement = -1;
+            } else if (ev.key === 'Enter') {
                 const elements = getFocusableElements(selectedCard);
-                
-                if (ev.key === 'w' || ev.key === 'W' || ev.key === 'ArrowUp') {
-                    selectedCard = Math.max(0, selectedCard - 1);
-                    selectedElement = -1;
-                } else if (ev.key === 's' || ev.key === 'S' || ev.key === 'ArrowDown') {
-                    selectedCard = Math.min(2, selectedCard + 1);
-                    selectedElement = -1;
-                } else if (ev.key === 'Enter') {
-                    if (isAuthed && selectedCard === 0) {
-                        ev.preventDefault();
-                        activateJoinNow('');
-                    } else if (elements.length > 0) {
-                        ev.preventDefault();
-                        selectedElement = 0;
-                        focusSelectedElement();
-                    }
+                if (isAuthed && selectedCard === 0) {
+                    ev.preventDefault();
+                    activateJoinNow('');
+                } else if (elements.length > 0) {
+                    ev.preventDefault();
+                    selectedElement = 0;
+                    focusSelectedElement();
                 }
             }
         };

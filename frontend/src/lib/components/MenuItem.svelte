@@ -103,15 +103,13 @@
         height: 100px;
         width: 944px;
         transition: 
-            height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-            width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-            background-color 0.25s ease,
-            box-shadow 0.2s ease,
-            transform 0.2s ease;
-    }
+            height var(--juice-duration) var(--juice-easing),
+            width var(--juice-duration) var(--juice-easing),
+            background-color var(--selected-duration) ease;
+     }
 
     .menu-item.selected {
-        background-color: #ffa936;
+        background-color: var(--selected-color);
         height: 220px;
         width: 1049px;
     }

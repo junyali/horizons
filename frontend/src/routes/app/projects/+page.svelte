@@ -3,6 +3,7 @@
 	import heroPlaceholder from '$lib/assets/projects/hero-placeholder.png';
     import { goto } from '$app/navigation';
     import InputPrompt from '$lib/components/InputPrompt.svelte';
+    import { createListNav } from '$lib/nav/wasd.svelte';
 
 	interface Project {
 		id: string;
@@ -57,51 +58,27 @@
 		}        
 	];
 
-	let selectedIndex = $state(0);
 	let scrollOffset = $state(0);
 	let listEl: HTMLDivElement;
-	let wheelAccumulator = 0;
-	const WHEEL_THRESHOLD = 80;
 
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'w' || e.key === 'ArrowUp') {
-			e.preventDefault();
-			selectedIndex = Math.max(0, selectedIndex - 1);
-			updateScroll();
-		} else if (e.key === 's' || e.key === 'ArrowDown') {
-			e.preventDefault();
-			selectedIndex = Math.min(projects.length - 1, selectedIndex + 1);
-			updateScroll();
-		} else if (e.key === 'Escape') {
-			goto('/app?noanimate')
-		} else if (e.key === 'Enter') {
-			const project = projects[selectedIndex];
+	const nav = createListNav({
+		count: () => projects.length,
+		wheel: 80,
+		onChange: () => updateScroll(),
+		onEscape: () => goto('/app?noanimate'),
+		onSelect: (i) => {
+			const project = projects[i];
 			if (project) {
 				// navigate to project detail
 			}
-		}
-	}
-
-	function handleWheel(e: WheelEvent) {
-		e.preventDefault();
-		wheelAccumulator += e.deltaY;
-
-		if (wheelAccumulator > WHEEL_THRESHOLD) {
-			wheelAccumulator = 0;
-			selectedIndex = Math.min(projects.length - 1, selectedIndex + 1);
-			updateScroll();
-		} else if (wheelAccumulator < -WHEEL_THRESHOLD) {
-			wheelAccumulator = 0;
-			selectedIndex = Math.max(0, selectedIndex - 1);
-			updateScroll();
-		}
-	}
+		},
+	});
 
 	async function updateScroll() {
 		await tick();
 		if (!listEl) return;
 		const cards = listEl.querySelectorAll('.project-card') as NodeListOf<HTMLElement>;
-		const card = cards[selectedIndex];
+		const card = cards[nav.selectedIndex];
 		if (!card) return;
 
 		const containerHeight = listEl.parentElement?.clientHeight ?? 0;
@@ -112,26 +89,35 @@
 		scrollOffset = -(cardTop + cardHeight / 2 - containerHeight / 2);
 	}
 
-	const selectedProject = $derived(projects[selectedIndex]);
+	const selectedProject = $derived(projects[nav.selectedIndex]);
 </script>
 
-<svelte:window onkeydown={handleKeydown} onwheel={handleWheel} />
+<svelte:window onkeydown={nav.handleKeydown} onwheel={nav.handleWheel} />
 
 <div class="relative size-full">
 	<!-- Hero image -->
-	<div class="hero-image">
-		<img src={selectedProject.image} alt={selectedProject.title} />
+	<svg class="filters" aria-hidden="true">
+		<filter id="turbulence">
+			<feTurbulence type="turbulence" baseFrequency="0.01 0.02" numOctaves="2" seed="2" result="noise" />
+			<feColorMatrix type="hueRotate" values="0" result="rotatedNoise">
+				<animate attributeName="values" from="0" to="360" dur="5s" repeatCount="indefinite" />
+			</feColorMatrix>
+			<feDisplacementMap in="SourceGraphic" in2="rotatedNoise" scale="25" xChannelSelector="R" yChannelSelector="G" />
+		</filter>
+	</svg>
+	<div class="hero-image h-full">
+		<img src={selectedProject.image} alt={selectedProject.title} class="h-full" style="filter: url(#turbulence);" />
 	</div>
 
 	<!-- Scrollable project list -->
 	<div class="projects-scroll" role="listbox" tabindex="-1">
 		<div class="projects-list" bind:this={listEl} style="transform: translateY({scrollOffset}px)">
 			{#each projects as project, i (project.id)}
-				{@const selected = i === selectedIndex}
+				{@const selected = i === nav.selectedIndex}
 				<button
 					class="project-card"
 					class:selected
-					onclick={() => { selectedIndex = i; }}
+					onclick={() => { nav.select(i); }}
 				>
 					<div class="details">
 						<p class="title">{project.title}</p>
@@ -173,16 +159,18 @@
 </div>
 
 <style>
+	.filters {
+		position: absolute;
+		width: 0;
+		height: 0;
+		overflow: hidden;
+	}
+
 	/* Hero image */
 	.hero-image {
 		position: absolute;
-		top: 50%;
-		right: -200px;
-		transform: translateY(-50%);
-		width: 1100px;
-		height: 620px;
-		border-radius: 24px;
-		overflow: hidden;
+		inset: 0 -40% 0 40%;
+		overflow: visible;
 		z-index: 0;
 		pointer-events: none;
 	}
@@ -191,6 +179,7 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+		transform: scale(1.2);
 	}
 
 	/* Project list scroll area */
@@ -208,7 +197,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 30px;
-		transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+		transition: transform var(--juice-duration) var(--juice-easing);
 	}
 
 	/* Project cards */
@@ -227,13 +216,13 @@
 		cursor: pointer;
 		text-align: left;
 		transition:
-			width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-			background-color 0.25s ease,
+			width var(--juice-duration) var(--juice-easing),
+			background-color var(--selected-duration) ease,
 			padding 0.3s ease;
 	}
 
 	.project-card.selected {
-		background-color: #ffa936;
+		background-color: var(--selected-color);
 		width: 824px;
 		gap: 32px;
 	}
@@ -289,57 +278,6 @@
 		color: black;
 	}
 
-	.click-icon {
-		flex-shrink: 0;
-	}
-
-	/* Dark ENTER key */
-	.key-dark {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 6px;
-		padding: 12px 16px;
-		background-color: #3d3d3d;
-		border: 4px solid black;
-		border-radius: 12px;
-		box-shadow: 0 4px 0 0 black;
-		flex-shrink: 0;
-	}
-
-	.key-dark span {
-		font-family: 'Cook Widetype', sans-serif;
-		font-size: 16px;
-		font-weight: 600;
-		color: white;
-	}
-
-	/* Light keys (ESC, W, S) */
-	.key-light {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		background-color: #f3e8d8;
-		border: 4px solid black;
-		border-radius: 12px;
-		box-shadow: 0 4px 0 0 black;
-		font-family: 'Cook Widetype', sans-serif;
-		font-weight: 600;
-		color: black;
-		flex-shrink: 0;
-	}
-
-	.key-esc {
-		padding: 14px 12px;
-		font-size: 18px;
-	}
-
-	.key-letter {
-		width: 52px;
-		height: 52px;
-		font-size: 20px;
-	}
-
 	/* Back button */
 	.back-card {
 		position: absolute;
@@ -356,10 +294,15 @@
 		box-shadow: 4px 4px 0px 0px black;
 		cursor: pointer;
 		overflow: hidden;
+
+		transition: 
+			background-color var(--selected-duration) ease,
+			transform var(--juice-duration) var(--juice-easing);
 	}
 
 	.back-card:hover {
 		background-color: #ffa936;
+		transform: scale(var(--juice-scale));
 	}
 
 	.back-text {
@@ -393,12 +336,4 @@
 		color: black;
 		flex-shrink: 0;
 	}
-
-	.mouse-icon {
-		height: 48px;
-		width: auto;
-		flex-shrink: 0;
-	}
-
-
 </style>
