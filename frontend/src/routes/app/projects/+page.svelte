@@ -62,14 +62,19 @@
 	let listEl: HTMLDivElement;
 
 	const nav = createListNav({
-		count: () => projects.length,
+		count: () => projects.length + 1, // +1 for create project card
 		wheel: 80,
 		onChange: () => updateScroll(),
 		onEscape: () => goto('/app?noanimate'),
 		onSelect: (i) => {
-			const project = projects[i];
-			if (project) {
-				// navigate to project detail
+			if (i === projects.length) {
+				// Navigate to create project page
+				goto('/app/projects/new');
+			} else {
+				const project = projects[i];
+				if (project) {
+					// navigate to project detail
+				}
 			}
 		},
 	});
@@ -89,7 +94,11 @@
 		scrollOffset = -(cardTop + cardHeight / 2 - containerHeight / 2);
 	}
 
-	const selectedProject = $derived(projects[nav.selectedIndex]);
+	const selectedProject = $derived(
+		nav.selectedIndex === projects.length
+			? { id: 'new', title: 'New Project', description: '', hoursLogged: 0, image: heroPlaceholder }
+			: projects[nav.selectedIndex]
+	);
 </script>
 
 <svelte:window onkeydown={nav.handleKeydown} onwheel={nav.handleWheel} />
@@ -127,11 +136,11 @@
 
 					{#if selected}
 						<div class="controls">
-							<InputPrompt type="Enter" /> 
+							<InputPrompt type="Enter" />
 
 							<span class="controls-text">OR</span>
 
-							<InputPrompt type="click" /> 
+							<InputPrompt type="click" />
 
 							<span class="controls-text">TO VIEW</span>
 						</div>
@@ -139,6 +148,29 @@
 
 					</button>
 			{/each}
+
+			<!-- Create Project Card -->
+			<button
+				class="project-card create-card"
+				class:selected={nav.selectedIndex === projects.length}
+				onclick={() => { nav.select(projects.length); }}
+			>
+				<div class="details">
+					<p class="title">+ CREATE PROJECT</p>
+				</div>
+
+				{#if nav.selectedIndex === projects.length}
+					<div class="controls">
+						<InputPrompt type="Enter" />
+
+						<span class="controls-text">OR</span>
+
+						<InputPrompt type="click" />
+
+						<span class="controls-text">TO CREATE</span>
+					</div>
+				{/if}
+			</button>
 		</div>
 	</div>
 
@@ -225,6 +257,14 @@
 		background-color: var(--selected-color);
 		width: 824px;
 		gap: 32px;
+	}
+
+	.create-card {
+		border-style: dashed;
+	}
+
+	.create-card .title {
+		opacity: 0.7;
 	}
 
 	/* Details */
