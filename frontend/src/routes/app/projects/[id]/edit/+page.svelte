@@ -134,7 +134,7 @@
 	{:else}
 		<!-- Hero image -->
 		<div
-			class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+73px)] w-214 h-120.5 z-0 pointer-events-none"
+			class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+73px)] w-214 h-120.5 z-0 pointer-events-none"
 		>
 			<TurbulentImage
 				src={mediaPreview || heroPlaceholder}
@@ -145,7 +145,7 @@
 		</div>
 
 	<!-- Project form card -->
-	<div class="absolute left-1/2 top-1/2 -translate-x-[calc(50%+0.5px)] -translate-y-[calc(50%+0.5px)]  w-[727px] bg-[#f3e8d8] border-4 border-black rounded-[20px] p-[30px] shadow-[4px_4px_0px_0px_black] flex flex-col gap-2 overflow-clip z-[1]">
+	<div class="absolute left-1/2 top-9/16 -translate-x-[calc(50%+0.5px)] -translate-y-[calc(50%+0.5px)]  w-[727px] bg-[#f3e8d8] border-4 border-black rounded-[20px] p-[30px] shadow-[4px_4px_0px_0px_black] flex flex-col gap-2 overflow-clip z-[1]">
 		<h1 class="font-cook text-4xl font-semibold text-black m-0 leading-normal">Edit Project</h1>
 		<h2 class="font-bricolage text-lg text-black/80 leading-normal">Update your project details below.</h2>
 
@@ -249,7 +249,7 @@
 				<div class="flex flex-col gap-1 w-full">
 					<!-- svelte-ignore a11y_label_has_associated_control -->
 					<label class="font-bricolage text-base font-semibold text-black leading-normal">Hackatime Projects</label>
-					<button class="hover-juice bg-[#fc5b3c] border-2 border-black rounded-lg px-4 py-2 w-full flex items-center justify-between cursor-pointer font-bricolage text-base font-semibold text-black" type="button">
+					<button class="hover-juice bg-[#fc5b3c] border-2 border-black rounded-lg px-4 py-2 w-full flex items-center justify-between cursor-pointer font-bricolage text-base font-semibold text-black" type="button" onclick={() => goto(`/app/projects/${projectId}/edit/hackatime`)}>
 						<span>Link Hackatime Projects</span>
 						<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
 							<path d="M4 12L12 4M12 4H5M12 4V11" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

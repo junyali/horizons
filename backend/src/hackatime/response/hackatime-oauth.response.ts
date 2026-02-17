@@ -26,7 +26,7 @@ export class HackatimeProjectResponse {
   name: string;
 
   @ApiProperty({ description: 'Total seconds logged', required: false })
-  totalSeconds?: number;
+  total_seconds?: number;
 }
 
 export class HackatimeProjectsResponse {

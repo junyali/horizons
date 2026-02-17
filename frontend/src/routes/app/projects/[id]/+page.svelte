@@ -88,8 +88,9 @@
 				</button>
 				<button
 					class="action-btn w-70.25 py-2 px-4 bg-[#ffa936] border-2 border-black rounded-lg font-bricolage text-base font-semibold text-black cursor-pointer overflow-hidden hover:scale-(--juice-scale)"
+					onclick={() => goto(`/app/projects/${projectId}/ship/presubmit`)}
 				>
-					RESUBMIT
+					SHIP
 				</button>
 			</div>
 		</div>

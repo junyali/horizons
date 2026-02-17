@@ -1519,7 +1519,7 @@ export interface components {
             /** @description Project name */
             name: string;
             /** @description Total seconds logged */
-            totalSeconds?: number;
+            total_seconds?: number;
         };
         HackatimeProjectsResponse: {
             /** @description List of Hackatime projects */
