@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import InputPrompt from '$lib/components/InputPrompt.svelte';
 	import heroPlaceholder from '$lib/assets/projects/hero-placeholder.png';
 	import { api } from '$lib/api';
 	import TurbulentImage from '$lib/components/TurbulentImage.svelte';
+	import { FormField, FormCard, BackButton, FormButtons, FormError } from '$lib/components/form';
 
 	const projectId = $derived($page.params.id);
 
@@ -23,6 +23,8 @@
 	let stateField = $state('');
 	let country = $state('');
 	let zipCode = $state('');
+
+	let allFilled = $derived(!!fullName.trim() && !!email.trim());
 
 	async function fetchData(id: string) {
 		loading = true;
@@ -82,7 +84,7 @@
 		const firstName = nameParts[0] ?? '';
 		const lastName = nameParts.slice(1).join(' ') ?? '';
 
-		const { data, error } = await api.PUT('/api/user', {
+		const { data } = await api.PUT('/api/user', {
 			body: {
 				firstName,
 				lastName,
@@ -114,196 +116,48 @@
 			<p class="font-cook text-[36px] font-semibold text-black m-0">LOADING...</p>
 		</div>
 	{:else}
-		<!-- Hero image -->
-		<div
-			class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+73px)] w-214 h-120.5 z-0 pointer-events-none"
-		>
-			<TurbulentImage
-				src={heroUrl || heroPlaceholder}
-				alt={projectTitle}
-				inset="0 0 0 0"
-				filterId="hero-turbulence"
-			/>
+		<div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+73px)] w-214 h-120.5 z-0 pointer-events-none">
+			<TurbulentImage src={heroUrl || heroPlaceholder} alt={projectTitle} inset="0 0 0 0" filterId="hero-turbulence" />
 		</div>
 
-		<!-- Form card -->
-		<div class="absolute left-1/2 top-9/16 -translate-x-[calc(50%+0.5px)] -translate-y-[calc(50%+0.5px)] w-[727px] bg-[#f3e8d8] border-4 border-black rounded-[20px] p-[30px] shadow-[4px_4px_0px_0px_black] flex flex-col gap-4 overflow-clip z-[1]">
-			<!-- Header -->
-			<div class="flex flex-col gap-2 text-black">
-				<h1 class="font-cook text-[36px] font-semibold m-0 leading-normal">READY TO SUBMIT?</h1>
-				<p class="font-bricolage text-[20px] leading-[1.5] tracking-[-0.22px] m-0">Verify this information is correct and fill out any blank fields.</p>
-			</div>
-
-			<!-- Personal info section -->
+		<FormCard title="READY TO SUBMIT?" subtitle="Verify this information is correct and fill out any blank fields.">
+			<!-- Personal info -->
 			<div class="flex gap-4 w-full">
-				<!-- Column 1: Full Name, Email -->
 				<div class="flex-1 flex flex-col gap-2 min-w-0">
-					<div class="flex flex-col gap-1 w-full">
-						<label class="font-bricolage text-base font-semibold text-black leading-normal" for="full-name">Full Name</label>
-						<input
-							id="full-name"
-							class="prefilled-field border-2 border-black rounded-lg px-4 py-2 shadow-[2px_2px_0px_0px_black] font-bricolage text-base font-semibold text-black/50 w-full outline-none appearance-none"
-							type="text"
-							placeholder="Heidi Hacksworth"
-							bind:value={fullName}
-						/>
-					</div>
-
-					<div class="flex flex-col gap-1 w-full">
-						<label class="font-bricolage text-base font-semibold text-black leading-normal" for="email">Email</label>
-						<input
-							id="email"
-							class="prefilled-field border-2 border-black rounded-lg px-4 py-2 shadow-[2px_2px_0px_0px_black] font-bricolage text-base font-semibold text-black/50 w-full outline-none appearance-none"
-							type="email"
-							placeholder="heidi@hackclub.com"
-							bind:value={email}
-						/>
-					</div>
+					<FormField label="Full Name" id="full-name" placeholder="Heidi Hacksworth" prefilled bind:value={fullName} />
+					<FormField label="Email" id="email" type="email" placeholder="heidi@hackclub.com" prefilled bind:value={email} />
 				</div>
-
-				<!-- Column 2: Birthday -->
 				<div class="flex-1 flex flex-col gap-2 min-w-0">
-					<div class="flex flex-col gap-1 w-full">
-						<label class="font-bricolage text-base font-semibold text-black leading-normal" for="birthday">Birthday</label>
-						<input
-							id="birthday"
-							class="prefilled-field border-2 border-black rounded-lg px-4 py-2 shadow-[2px_2px_0px_0px_black] font-bricolage text-base font-semibold text-black/50 w-full outline-none appearance-none"
-							type="text"
-							placeholder="10/10/2010"
-							bind:value={birthday}
-						/>
-					</div>
+					<FormField label="Birthday" id="birthday" placeholder="10/10/2010" prefilled bind:value={birthday} />
 				</div>
 			</div>
 
-			<!-- Divider -->
 			<hr class="border-t-2 border-black/20 w-full m-0" />
 
-			<!-- Address section -->
+			<!-- Address -->
 			<div class="flex gap-4 w-full">
-				<!-- Column 1: Address Line 1, Address Line 2, City -->
 				<div class="flex-1 flex flex-col gap-2 min-w-0">
-					<div class="flex flex-col gap-1 w-full">
-						<label class="font-bricolage text-base font-semibold text-black leading-normal" for="address1">Address Line 1</label>
-						<input
-							id="address1"
-							class="prefilled-field border-2 border-black rounded-lg px-4 py-2 shadow-[2px_2px_0px_0px_black] font-bricolage text-base font-semibold text-black/50 w-full outline-none appearance-none"
-							type="text"
-							placeholder="15 Falls Rd"
-							bind:value={addressLine1}
-						/>
-					</div>
-
-					<div class="flex flex-col gap-1 w-full">
-						<label class="font-bricolage text-base font-semibold text-black leading-normal" for="address2">Address Line 2</label>
-						<input
-							id="address2"
-							class="prefilled-field border-2 border-black rounded-lg px-4 py-2 shadow-[2px_2px_0px_0px_black] font-bricolage text-base font-semibold text-black/50 w-full outline-none appearance-none"
-							type="text"
-							bind:value={addressLine2}
-						/>
-					</div>
-
-					<div class="flex flex-col gap-1 w-full">
-						<label class="font-bricolage text-base font-semibold text-black leading-normal" for="city">City</label>
-						<input
-							id="city"
-							class="prefilled-field border-2 border-black rounded-lg px-4 py-2 shadow-[2px_2px_0px_0px_black] font-bricolage text-base font-semibold text-black/50 w-full outline-none appearance-none"
-							type="text"
-							placeholder="Shelburnetown"
-							bind:value={city}
-						/>
-					</div>
+					<FormField label="Address Line 1" id="address1" placeholder="15 Falls Rd" prefilled bind:value={addressLine1} />
+					<FormField label="Address Line 2" id="address2" prefilled bind:value={addressLine2} />
+					<FormField label="City" id="city" placeholder="Shelburnetown" prefilled bind:value={city} />
 				</div>
-
-				<!-- Column 2: State, Country, Zip Code -->
 				<div class="flex-1 flex flex-col gap-2 min-w-0">
-					<div class="flex flex-col gap-1 w-full">
-						<label class="font-bricolage text-base font-semibold text-black leading-normal" for="state">State</label>
-						<input
-							id="state"
-							class="prefilled-field border-2 border-black rounded-lg px-4 py-2 shadow-[2px_2px_0px_0px_black] font-bricolage text-base font-semibold text-black/50 w-full outline-none appearance-none"
-							type="text"
-							placeholder="Vermontland"
-							bind:value={stateField}
-						/>
-					</div>
-
-					<div class="flex flex-col gap-1 w-full">
-						<label class="font-bricolage text-base font-semibold text-black leading-normal" for="country">Country</label>
-						<input
-							id="country"
-							class="prefilled-field border-2 border-black rounded-lg px-4 py-2 shadow-[2px_2px_0px_0px_black] font-bricolage text-base font-semibold text-black/50 w-full outline-none appearance-none"
-							type="text"
-							placeholder="Hacksmerica"
-							bind:value={country}
-						/>
-					</div>
-
-					<div class="flex flex-col gap-1 w-full">
-						<label class="font-bricolage text-base font-semibold text-black leading-normal" for="zip-code">Zip Code</label>
-						<input
-							id="zip-code"
-							class="prefilled-field border-2 border-black rounded-lg px-4 py-2 shadow-[2px_2px_0px_0px_black] font-bricolage text-base font-semibold text-black/50 w-full outline-none appearance-none"
-							type="text"
-							placeholder="05482"
-							bind:value={zipCode}
-						/>
-					</div>
+					<FormField label="State" id="state" placeholder="Vermontland" prefilled bind:value={stateField} />
+					<FormField label="Country" id="country" placeholder="Hacksmerica" prefilled bind:value={country} />
+					<FormField label="Zip Code" id="zip-code" placeholder="05482" prefilled bind:value={zipCode} />
 				</div>
 			</div>
 
-			<!-- Form buttons -->
-			{#if errorMsg}
-				<p class="font-bricolage text-sm font-semibold text-red-600 m-0 text-center">{errorMsg}</p>
-			{/if}
-			<div class="flex gap-2.5 items-center justify-center w-full">
-				<button
-					class="hover-juice border-2 border-black rounded-lg px-4 py-2 w-[231px] font-bricolage text-base font-semibold text-black cursor-pointer bg-[#f3e8d8]"
-					type="button"
-					onclick={() => goto(`/app/projects/${projectId}/ship/hackatime`)}
-				>
-					← BACK
-				</button>
-				<button
-					class="hover-juice bg-[#ffa936] border-2 border-black rounded-lg px-4 py-2 w-[231px] font-bricolage text-base font-semibold text-black cursor-pointer"
-					type="button"
-					onclick={handleNext}
-					disabled={submitting}
-				>
-					{submitting ? 'SAVING...' : 'THIS IS CORRECT →'}
-				</button>
-			</div>
-		</div>
+			<FormError message={errorMsg} />
+			<FormButtons
+				onback={() => goto(`/app/projects/${projectId}/ship/hackatime`)}
+				onnext={handleNext}
+				nextLabel="THIS IS CORRECT →"
+				loading={submitting}
+				blink={allFilled}
+			/>
+		</FormCard>
 	{/if}
 
-	<!-- Back button -->
-	<button class="hover-juice-bg absolute left-8 top-13 z-5 flex items-center gap-2.5 p-5 bg-[#f3e8d8] border-4 border-black rounded-[20px] shadow-[4px_4px_0px_0px_black] cursor-pointer overflow-hidden" onclick={() => goto(`/app/projects/${projectId}`)}>
-		<InputPrompt type="ESC" />
-		<span class="font-cook text-2xl font-semibold text-black">BACK</span>
-	</button>
+	<BackButton onclick={() => goto(`/app/projects/${projectId}`)} />
 </div>
-
-<style>
-	.prefilled-field {
-		background: linear-gradient(90deg, rgba(204, 204, 204, 0.5), rgba(204, 204, 204, 0.5)),
-			linear-gradient(90deg, #f3e8d8, #f3e8d8);
-	}
-
-	.hover-juice {
-		transition: transform var(--juice-duration) var(--juice-easing);
-	}
-	.hover-juice:hover {
-		transform: scale(var(--juice-scale));
-	}
-
-	.hover-juice-bg {
-		transition:
-			background-color var(--selected-duration) ease,
-			transform var(--juice-duration) var(--juice-easing);
-	}
-	.hover-juice-bg:hover {
-		background-color: #ffa936;
-		transform: scale(var(--juice-scale));
-	}
-</style>

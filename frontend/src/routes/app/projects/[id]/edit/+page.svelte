@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import InputPrompt from '$lib/components/InputPrompt.svelte';
 	import heroPlaceholder from '$lib/assets/projects/hero-placeholder.png';
 	import { api, type components } from '$lib/api';
 	import TurbulentImage from '$lib/components/TurbulentImage.svelte';
+	import { FormField, FormTextarea, FormSelect, FileUpload, FormCard, BackButton, FormError, FormSubmitButton } from '$lib/components/form';
 
 	type ProjectType = components['schemas']['CreateProjectDto']['projectType'];
 
-	const projectTypes: { label: string; value: ProjectType }[] = [
+	const projectTypes = [
 		{ label: 'Windows Playable', value: 'windows_playable' },
 		{ label: 'Mac Playable', value: 'mac_playable' },
 		{ label: 'Linux Playable', value: 'linux_playable' },
@@ -26,16 +26,13 @@
 	let codeUrl = $state('');
 	let submitting = $state(false);
 	let errorMsg = $state<string | null>(null);
-
-	let fileInput: HTMLInputElement;
 	let mediaUrl = $state<string | null>(null);
 	let mediaPreview = $state<string | null>(null);
-	let uploading = $state(false);
 
 	async function fetchProject(id: string) {
 		loading = true;
 		errorMsg = null;
-		const { data, error: err } = await api.GET('/api/projects/auth/{id}', {
+		const { data } = await api.GET('/api/projects/auth/{id}', {
 			params: { path: { id: parseInt(id) } }
 		});
 		if (data) {
@@ -57,37 +54,6 @@
 		if (projectId) fetchProject(projectId);
 	});
 
-	async function handleFileSelect(e: Event) {
-		const input = e.target as HTMLInputElement;
-		const file = input.files?.[0];
-		if (!file) return;
-
-		// Show local preview
-		mediaPreview = URL.createObjectURL(file);
-
-		uploading = true;
-		errorMsg = null;
-
-		const formData = new FormData();
-		formData.append('file', file);
-
-		const { data, error } = await api.POST('/api/uploads', {
-			body: formData as any,
-			bodySerializer: (body: any) => body,
-		});
-
-		if (data) {
-			mediaUrl = data.url;
-		} else {
-			errorMsg = 'Failed to upload file. Please try again.';
-			mediaPreview = null;
-			mediaUrl = null;
-		}
-
-		uploading = false;
-		input.value = '';
-	}
-
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') {
 			goto(`/app/projects/${projectId}`);
@@ -103,7 +69,7 @@
 		submitting = true;
 		errorMsg = null;
 
-		const { data, error } = await api.PUT('/api/projects/auth/{id}', {
+		const { data } = await api.PUT('/api/projects/auth/{id}', {
 			params: { path: { id: Number(projectId) } },
 			body: {
 				projectTitle: title.trim(),
@@ -132,151 +98,41 @@
 			<p class="font-cook text-[36px] font-semibold text-black m-0">LOADING...</p>
 		</div>
 	{:else}
-		<!-- Hero image -->
-		<div
-			class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+73px)] w-214 h-120.5 z-0 pointer-events-none"
-		>
-			<TurbulentImage
-				src={mediaPreview || heroPlaceholder}
-				alt={title}
-				inset="0 0 0 0"
-				filterId="hero-turbulence"
-			/>
+		<div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+73px)] w-214 h-120.5 z-0 pointer-events-none">
+			<TurbulentImage src={mediaPreview || heroPlaceholder} alt={title} inset="0 0 0 0" filterId="hero-turbulence" />
 		</div>
 
-	<!-- Project form card -->
-	<div class="absolute left-1/2 top-9/16 -translate-x-[calc(50%+0.5px)] -translate-y-[calc(50%+0.5px)]  w-[727px] bg-[#f3e8d8] border-4 border-black rounded-[20px] p-[30px] shadow-[4px_4px_0px_0px_black] flex flex-col gap-2 overflow-clip z-[1]">
-		<h1 class="font-cook text-4xl font-semibold text-black m-0 leading-normal">Edit Project</h1>
-		<h2 class="font-bricolage text-lg text-black/80 leading-normal">Update your project details below.</h2>
-
-		<div class="flex gap-4 w-full">
-			<!-- Column 1 -->
-			<div class="flex-1 flex flex-col gap-2 min-w-0">
-				<div class="flex flex-col gap-1 w-full">
-					<label class="font-bricolage text-base font-semibold text-black leading-normal" for="title">Title</label>
-					<input
-						id="title"
-						class="bg-[#f3e8d8] border-2 border-black rounded-lg px-4 py-2 shadow-[2px_2px_0px_0px_black] font-bricolage text-base font-semibold text-black w-full outline-none appearance-none placeholder:text-black/50"
-						type="text"
-						placeholder="Horizons"
-						bind:value={title}
-					/>
+		<FormCard title="Edit Project" subtitle="Update your project details below.">
+			<div class="flex gap-4 w-full">
+				<!-- Column 1 -->
+				<div class="flex-1 flex flex-col gap-2 min-w-0">
+					<FormField label="Title" id="title" placeholder="Horizons" bind:value={title} />
+					<FormSelect label="Project Type" id="project-type" options={projectTypes} bind:value={projectType} />
+					<FormTextarea label="Description" id="description" placeholder="Describe what your project does..." bind:value={description} />
+					<FileUpload bind:mediaUrl bind:mediaPreview onerror={(msg) => errorMsg = msg} />
 				</div>
 
-				<div class="flex flex-col gap-1 w-full">
-					<label class="font-bricolage text-base font-semibold text-black leading-normal" for="project-type">Project Type</label>
-					<select id="project-type" class="bg-[#f3e8d8] border-2 border-black rounded-lg px-4 py-2 shadow-[2px_2px_0px_0px_black] font-bricolage text-base font-semibold text-black w-full outline-none appearance-none" bind:value={projectType}>
-						{#each projectTypes as pt}
-							<option value={pt.value}>{pt.label}</option>
-						{/each}
-					</select>
-				</div>
-
-				<div class="flex flex-col gap-1 w-full">
-					<label class="font-bricolage text-base font-semibold text-black leading-normal" for="description">Description</label>
-					<textarea
-						id="description"
-						class="bg-[#f3e8d8] border-2 border-black rounded-lg px-4 py-2 shadow-[2px_2px_0px_0px_black] font-bricolage text-base font-semibold text-black w-full outline-none resize-none placeholder:text-black/50"
-						placeholder="Describe what your project does..."
-						rows="4"
-						bind:value={description}
-					></textarea>
-				</div>
-
-				<div class="flex flex-col gap-1 w-full">
-					<!-- svelte-ignore a11y_label_has_associated_control -->
-					<label class="font-bricolage text-base font-semibold text-black leading-normal">Screenshot/Video</label>
-					<input
-						bind:this={fileInput}
-						type="file"
-						accept="image/*,video/*"
-						class="hidden"
-						onchange={handleFileSelect}
-					/>
-					{#if mediaPreview}
-						<button
-							class="hover-juice-bg bg-[#f3e8d8] border-2 border-black rounded-lg overflow-hidden shadow-[2px_2px_0px_0px_black] w-full cursor-pointer relative"
-							type="button"
-							onclick={() => fileInput.click()}
-							disabled={uploading}
-						>
-							<img src={mediaPreview} alt="Upload preview" class="w-full h-32 object-cover" />
-							{#if uploading}
-								<div class="absolute inset-0 bg-black/40 flex items-center justify-center">
-									<span class="font-bricolage text-base font-semibold text-white">Uploading...</span>
-								</div>
-							{/if}
+				<!-- Column 2 -->
+				<div class="flex-1 flex flex-col gap-2 min-w-0">
+					<FormField label="Demo URL" id="demo-url" type="url" placeholder="https://username.itch.io/mygame" bind:value={demoUrl} />
+					<FormField label="Code URL" id="code-url" type="url" placeholder="https://username.itch.io/mygame" bind:value={codeUrl} />
+					<FormField label="Hackatime Projects" id="hackatime-link">
+						<button class="hover-juice bg-[#fc5b3c] border-2 border-black rounded-lg px-4 py-2 w-full flex items-center justify-between cursor-pointer font-bricolage text-base font-semibold text-black" type="button" onclick={() => goto(`/app/projects/${projectId}/edit/hackatime`)}>
+							<span>Link Hackatime Projects</span>
+							<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+								<path d="M4 12L12 4M12 4H5M12 4V11" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							</svg>
 						</button>
-					{:else}
-						<button
-							class="hover-juice-bg bg-[#f3e8d8] border-2 border-black rounded-lg p-4 shadow-[2px_2px_0px_0px_black] w-full cursor-pointer"
-							type="button"
-							onclick={() => fileInput.click()}
-						>
-							<span class="font-bricolage text-base font-semibold text-black/50 text-center block">+ Upload Screenshot/Video</span>
-						</button>
-					{/if}
-					<p class="font-bricolage text-xs font-semibold text-black/60 m-0 leading-normal">
-						If your project is difficult to experience, we recommend uploading a video
-					</p>
+					</FormField>
 				</div>
 			</div>
 
-			<!-- Column 2 -->
-			<div class="flex-1 flex flex-col gap-2 min-w-0">
-				<div class="flex flex-col gap-1 w-full">
-					<label class="font-bricolage text-base font-semibold text-black leading-normal" for="demo-url">Demo URL</label>
-					<input
-						id="demo-url"
-						class="bg-[#f3e8d8] border-2 border-black rounded-lg px-4 py-2 shadow-[2px_2px_0px_0px_black] font-bricolage text-base font-semibold text-black w-full outline-none appearance-none placeholder:text-black/50"
-						type="url"
-						placeholder="https://username.itch.io/mygame"
-						bind:value={demoUrl}
-					/>
-				</div>
-
-				<div class="flex flex-col gap-1 w-full">
-					<label class="font-bricolage text-base font-semibold text-black leading-normal" for="code-url">Code URL</label>
-					<input
-						id="code-url"
-						class="bg-[#f3e8d8] border-2 border-black rounded-lg px-4 py-2 shadow-[2px_2px_0px_0px_black] font-bricolage text-base font-semibold text-black w-full outline-none appearance-none placeholder:text-black/50"
-						type="url"
-						placeholder="https://username.itch.io/mygame"
-						bind:value={codeUrl}
-					/>
-				</div>
-
-				<div class="flex flex-col gap-1 w-full">
-					<!-- svelte-ignore a11y_label_has_associated_control -->
-					<label class="font-bricolage text-base font-semibold text-black leading-normal">Hackatime Projects</label>
-					<button class="hover-juice bg-[#fc5b3c] border-2 border-black rounded-lg px-4 py-2 w-full flex items-center justify-between cursor-pointer font-bricolage text-base font-semibold text-black" type="button" onclick={() => goto(`/app/projects/${projectId}/edit/hackatime`)}>
-						<span>Link Hackatime Projects</span>
-						<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-							<path d="M4 12L12 4M12 4H5M12 4V11" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-						</svg>
-					</button>
-				</div>
-			</div>
-		</div>
-
-		<!-- Submit -->
-		{#if errorMsg}
-			<p class="font-bricolage text-sm font-semibold text-red-600 m-0 text-center">{errorMsg}</p>
-		{/if}
-		<div class="flex items-center justify-center w-full">
-			<button class="hover-juice bg-[#ffa936] border-2 border-black rounded-lg px-4 py-2 w-[415px] font-bricolage text-base font-semibold text-black cursor-pointer" type="button" onclick={handleSubmit} disabled={submitting}>
-				{submitting ? 'SAVING...' : 'SAVE CHANGES'}
-			</button>
-		</div>
-	</div>
-
+			<FormError message={errorMsg} />
+			<FormSubmitButton label="SAVE CHANGES" loadingLabel="SAVING..." onclick={handleSubmit} loading={submitting} />
+		</FormCard>
 	{/if}
 
-	<!-- Back button -->
-	<button class="hover-juice-bg absolute left-8 top-13 z-5 flex items-center gap-2.5 p-5 bg-[#f3e8d8] border-4 border-black rounded-[20px] shadow-[4px_4px_0px_0px_black] cursor-pointer overflow-hidden" onclick={() => goto(`/app/projects/${projectId}`)}>
-		<InputPrompt type="ESC" />
-		<span class="font-cook text-2xl font-semibold text-black">BACK</span>
-	</button>
+	<BackButton onclick={() => goto(`/app/projects/${projectId}`)} />
 </div>
 
 <style>
@@ -284,16 +140,6 @@
 		transition: transform var(--juice-duration) var(--juice-easing);
 	}
 	.hover-juice:hover {
-		transform: scale(var(--juice-scale));
-	}
-
-	.hover-juice-bg {
-		transition:
-			background-color var(--selected-duration) ease,
-			transform var(--juice-duration) var(--juice-easing);
-	}
-	.hover-juice-bg:hover {
-		background-color: #ffa936;
 		transform: scale(var(--juice-scale));
 	}
 </style>

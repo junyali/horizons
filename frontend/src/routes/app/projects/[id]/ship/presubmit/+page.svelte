@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import InputPrompt from '$lib/components/InputPrompt.svelte';
 	import heroPlaceholder from '$lib/assets/projects/hero-placeholder.png';
 	import { api } from '$lib/api';
 	import TurbulentImage from '$lib/components/TurbulentImage.svelte';
+	import { BackButton, FormSubmitButton } from '$lib/components/form';
 
 	const projectId = $derived($page.params.id);
 
@@ -58,16 +58,8 @@
 			<p class="font-cook text-[36px] font-semibold text-black m-0">LOADING...</p>
 		</div>
 	{:else}
-		<!-- Hero image -->
-		<div
-			class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+73px)] w-214 h-120.5 z-0 pointer-events-none"
-		>
-			<TurbulentImage
-				src={screenshotUrl || heroPlaceholder}
-				alt={title}
-				inset="0 0 0 0"
-				filterId="hero-turbulence"
-			/>
+		<div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+73px)] w-214 h-120.5 z-0 pointer-events-none">
+			<TurbulentImage src={screenshotUrl || heroPlaceholder} alt={title} inset="0 0 0 0" filterId="hero-turbulence" />
 		</div>
 
 		<!-- Presubmit card -->
@@ -85,10 +77,10 @@
 			<div class="flex items-start justify-center w-full">
 				<div class="flex flex-col gap-4 w-[487px]">
 					{#each checklistItems as item, i}
-						<label class="hover-juice-bg border-2 border-black rounded-lg p-2 w-full flex gap-2.5 items-center justify-center cursor-pointer overflow-clip {checked[i] ? "bg-[#ffa936]" : "bg-[#f3e8d8]"}">
+						<label class="checklist-item border-2 border-black rounded-lg p-2 w-full flex gap-2.5 items-center justify-center cursor-pointer overflow-clip {checked[i] ? "bg-[#ffa936]" : "bg-[#f3e8d8]"}">
 							<p class="font-bricolage text-[14px] font-normal leading-[1.5] tracking-[-0.154px] text-black flex-1">{item}</p>
 							<input type="checkbox" class="hidden" bind:checked={checked[i]} />
-							<div class="hover-juice-bg size-4 border border-black rounded-[4px] shrink-0 flex items-center justify-center {checked[i] ? 'bg-[#ffa936]' : ''}">
+							<div class="size-4 border border-black rounded-[4px] shrink-0 flex items-center justify-center {checked[i] ? 'bg-[#ffa936]' : ''}">
 								{#if checked[i]}
 									<svg width="10" height="8" viewBox="0 0 10 8" fill="none">
 										<path d="M1 4L3.5 6.5L9 1" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -100,42 +92,20 @@
 				</div>
 			</div>
 
-			<!-- Next button -->
-			<div class="flex items-center justify-center w-full">
-				<button
-					class="hover-juice bg-[#ffa936] border-2 border-black rounded-lg px-4 py-2 w-[415px] font-bricolage text-base font-semibold text-black cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-					type="button"
-					onclick={handleNext}
-					disabled={!allChecked}
-				>
-					NEXT →
-				</button>
-			</div>
+			<FormSubmitButton onclick={handleNext} disabled={!allChecked} blink={allChecked} />
 		</div>
 	{/if}
 
-	<!-- Back button -->
-	<button class="hover-juice-bg absolute left-8 top-13 z-5 flex items-center gap-2.5 p-5 bg-[#f3e8d8] border-4 border-black rounded-[20px] shadow-[4px_4px_0px_0px_black] cursor-pointer overflow-hidden" onclick={() => goto(`/app/projects/${projectId}`)}>
-		<InputPrompt type="ESC" />
-		<span class="font-cook text-2xl font-semibold text-black">BACK</span>
-	</button>
+	<BackButton onclick={() => goto(`/app/projects/${projectId}`)} />
 </div>
 
 <style>
-	.hover-juice {
-		transition: transform var(--juice-duration) var(--juice-easing);
-	}
-	.hover-juice:hover {
-		transform: scale(var(--juice-scale));
-	}
-
-	.hover-juice-bg {
+	.checklist-item {
 		transition:
 			background-color var(--selected-duration) ease,
 			transform var(--juice-duration) var(--juice-easing);
 	}
-	.hover-juice-bg:hover {
-		/* background-color: #ffa936; */
+	.checklist-item:hover {
 		transform: scale(var(--juice-scale));
 	}
 </style>

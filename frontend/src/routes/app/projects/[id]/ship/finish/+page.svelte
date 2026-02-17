@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import InputPrompt from '$lib/components/InputPrompt.svelte';
 	import heroPlaceholder from '$lib/assets/projects/hero-placeholder.png';
 	import { api } from '$lib/api';
 	import TurbulentImage from '$lib/components/TurbulentImage.svelte';
+	import { FormCard, BackButton, FormButtons, FormError } from '$lib/components/form';
 
 	const projectId = $derived($page.params.id);
 
@@ -65,72 +65,22 @@
 			<p class="font-cook text-[36px] font-semibold text-black m-0">LOADING...</p>
 		</div>
 	{:else}
-		<!-- Hero image -->
-		<div
-			class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+73px)] w-214 h-120.5 z-0 pointer-events-none"
-		>
-			<TurbulentImage
-				src={heroUrl || heroPlaceholder}
-				alt={projectTitle}
-				inset="0 0 0 0"
-				filterId="hero-turbulence"
+		<div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+73px)] w-214 h-120.5 z-0 pointer-events-none">
+			<TurbulentImage src={heroUrl || heroPlaceholder} alt={projectTitle} inset="0 0 0 0" filterId="hero-turbulence" />
+		</div>
+
+		<FormCard title="READY TO SUBMIT?" subtitle="Hit submit to submit your project. You won't be able to make any changes until your project is reviewed. You can resubmit your project once reviewed.">
+			<FormError message={errorMsg} />
+			<FormButtons
+				onback={() => goto(`/app/projects/${projectId}/ship/personal`)}
+				onnext={handleSubmit}
+				nextLabel="SUBMIT →"
+				loadingLabel="SUBMITTING..."
+				loading={submitting}
+				blink
 			/>
-		</div>
-
-		<!-- Submit card -->
-		<div class="absolute left-1/2 top-9/16 -translate-x-[calc(50%+0.5px)] -translate-y-[calc(50%+0.5px)] w-[727px] bg-[#f3e8d8] border-4 border-black rounded-[20px] p-[30px] shadow-[4px_4px_0px_0px_black] flex flex-col gap-4 overflow-clip z-[1]">
-			<!-- Header -->
-			<div class="flex flex-col gap-2 text-black w-full">
-				<h1 class="font-cook text-[36px] font-semibold m-0 leading-normal">READY TO SUBMIT?</h1>
-				<p class="font-bricolage text-[20px] leading-[1.5] tracking-[-0.22px] m-0">Hit submit to submit your project. You won't be able to make any changes until your project is reviewed. You can resubmit your project once reviewed.</p>
-			</div>
-
-			<!-- Form buttons -->
-			{#if errorMsg}
-				<p class="font-bricolage text-sm font-semibold text-red-600 m-0 text-center">{errorMsg}</p>
-			{/if}
-			<div class="flex gap-2.5 items-center justify-center w-full">
-				<button
-					class="hover-juice border-2 border-black rounded-lg px-4 py-2 w-[231px] font-bricolage text-base font-semibold text-black cursor-pointer bg-[#f3e8d8]"
-					type="button"
-					onclick={() => goto(`/app/projects/${projectId}/ship/personal`)}
-				>
-					← BACK
-				</button>
-				<button
-					class="hover-juice bg-[#ffa936] border-2 border-black rounded-lg px-4 py-2 w-[231px] font-bricolage text-base font-semibold text-black cursor-pointer"
-					type="button"
-					onclick={handleSubmit}
-					disabled={submitting}
-				>
-					{submitting ? 'SUBMITTING...' : 'SUBMIT →'}
-				</button>
-			</div>
-		</div>
+		</FormCard>
 	{/if}
 
-	<!-- Back button -->
-	<button class="hover-juice-bg absolute left-8 top-13 z-5 flex items-center gap-2.5 p-5 bg-[#f3e8d8] border-4 border-black rounded-[20px] shadow-[4px_4px_0px_0px_black] cursor-pointer overflow-hidden" onclick={() => goto(`/app/projects/${projectId}`)}>
-		<InputPrompt type="ESC" />
-		<span class="font-cook text-2xl font-semibold text-black">BACK</span>
-	</button>
+	<BackButton onclick={() => goto(`/app/projects/${projectId}`)} />
 </div>
-
-<style>
-	.hover-juice {
-		transition: transform var(--juice-duration) var(--juice-easing);
-	}
-	.hover-juice:hover {
-		transform: scale(var(--juice-scale));
-	}
-
-	.hover-juice-bg {
-		transition:
-			background-color var(--selected-duration) ease,
-			transform var(--juice-duration) var(--juice-easing);
-	}
-	.hover-juice-bg:hover {
-		background-color: #ffa936;
-		transform: scale(var(--juice-scale));
-	}
-</style>

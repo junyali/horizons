@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import InputPrompt from '$lib/components/InputPrompt.svelte';
 	import heroPlaceholder from '$lib/assets/projects/hero-placeholder.png';
 	import { api } from '$lib/api';
 	import TurbulentImage from '$lib/components/TurbulentImage.svelte';
+	import { FormCard, BackButton, FormError, FormSubmitButton } from '$lib/components/form';
 
 	const projectId = $derived($page.params.id);
 
@@ -14,9 +14,7 @@
 	let heroUrl = $state<string | null>(null);
 	let projectTitle = $state('');
 
-	// All hackatime projects for this user
 	let allProjects = $state<{ id: number; name: string; total_seconds?: number }[]>([]);
-	// Currently selected project names
 	let selectedNames = $state<Set<string>>(new Set());
 
 	let totalHours = $derived(() => {
@@ -33,7 +31,6 @@
 		loading = true;
 		errorMsg = null;
 
-		// Fetch project info for hero image
 		const { data: projectData } = await api.GET('/api/projects/auth/{id}', {
 			params: { path: { id: parseInt(id) } }
 		});
@@ -42,7 +39,6 @@
 			projectTitle = (projectData as any).projectTitle ?? '';
 		}
 
-		// Fetch all hackatime projects and currently linked ones in parallel
 		const [allRes, linkedRes] = await Promise.all([
 			api.GET('/api/hackatime/projects/all'),
 			api.GET('/api/projects/auth/{id}/hackatime-projects', {
@@ -118,122 +114,74 @@
 			<p class="font-cook text-[36px] font-semibold text-black m-0">LOADING...</p>
 		</div>
 	{:else}
-		<!-- Hero image -->
-		<div
-			class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+73px)] w-214 h-120.5 z-0 pointer-events-none"
-		>
-			<TurbulentImage
-				src={heroUrl || heroPlaceholder}
-				alt={projectTitle}
-				inset="0 0 0 0"
-				filterId="hero-turbulence"
+		<div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+73px)] w-214 h-120.5 z-0 pointer-events-none">
+			<TurbulentImage src={heroUrl || heroPlaceholder} alt={projectTitle} inset="0 0 0 0" filterId="hero-turbulence" />
+		</div>
+
+		<FormCard title="EDIT HACKATIME PROJECTS">
+			<!-- Project list outer container -->
+			<div class="project-list bg-[#f3e8d8] border-2 border-black rounded-lg p-2 w-full max-h-[300px] overflow-y-auto overflow-clip">
+				<div class="flex flex-col gap-2 mx-3">
+					{#each allProjects as project}
+						<button
+							type="button"
+							class="project-item border-2 border-black rounded-lg p-2 w-full flex gap-2.5 items-center justify-center cursor-pointer overflow-clip {selectedNames.has(project.name) ? 'bg-[#ffa936]' : 'bg-[#f3e8d8]'}"
+							onclick={() => toggleProject(project.name)}
+						>
+							<div class="flex flex-col items-start text-black flex-1">
+								<span class="font-bricolage text-[14px] font-semibold leading-[1.5] tracking-[-0.154px]">{project.name}</span>
+								<span class="font-bricolage text-[12px] font-normal leading-[1.5] text-black/60">{formatHours(project.total_seconds)}</span>
+							</div>
+							<div class="size-4 border border-black rounded-sm shrink-0 flex items-center justify-center {selectedNames.has(project.name) ? 'bg-[#ffa936]' : ''}">
+								{#if selectedNames.has(project.name)}
+									<svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+										<path d="M1 4L3.5 6.5L9 1" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+									</svg>
+								{/if}
+							</div>
+						</button>
+					{:else}
+						<p class="font-bricolage text-base text-black/50 text-center p-4">No hackatime projects found. Make sure your hackatime account is linked.</p>
+					{/each}
+				</div>
+			</div>
+
+			<!-- Total hours -->
+			<div class="bg-[#f3e8d8] border-2 border-black rounded-lg px-4 py-2.5 w-full">
+				<span class="font-bricolage text-base text-black">Total Hours: {totalHours()}</span>
+			</div>
+
+			<FormError message={errorMsg} />
+			<FormSubmitButton
+				label="DONE"
+				loadingLabel="SAVING..."
+				onclick={handleDone}
+				loading={submitting}
+				blink={selectedNames.size > 0}
 			/>
-		</div>
-
-		<!-- Project card -->
-		<div class="absolute left-1/2 top-9/16 -translate-x-[calc(50%+0.5px)] -translate-y-[calc(50%+0.5px)] w-[727px] bg-[#f3e8d8] border-4 border-black rounded-[20px] p-[30px] shadow-[4px_4px_0px_0px_black] flex flex-col gap-4 overflow-clip z-[1]">
-			<h1 class="font-cook text-[36px] font-semibold text-black m-0 leading-normal">EDIT HACKATIME PROJECTS</h1>
-
-			<!-- Project list container -->
-			<div class="flex flex-col gap-2.5 w-full">
-				<!-- Scrollable project list -->
-				<div class="bg-[#f3e8d8] border-2 border-black rounded-lg p-2 w-full max-h-[300px] overflow-y-auto">
-					<div class="flex flex-col gap-2">
-						{#each allProjects as project}
-							<button
-								type="button"
-								class="project-item border-2 border-black rounded-lg p-4 w-full flex items-center justify-between cursor-pointer"
-								class:bg-[#ffa936]={selectedNames.has(project.name)}
-								class:bg-[#f3e8d8]={!selectedNames.has(project.name)}
-								onclick={() => toggleProject(project.name)}
-							>
-								<div class="flex flex-col items-start text-black">
-									<span class="font-sf-pro text-[20px] font-bold">{project.name}</span>
-									<span class="font-sf-pro text-[14px] font-bold">{formatHours(project.total_seconds)}</span>
-								</div>
-								<div
-									class="border-2 border-black rounded-lg px-4 py-2 flex items-center justify-center"
-									class:bg-[#ffa936]={selectedNames.has(project.name)}
-									class:bg-[#f3e8d8]={!selectedNames.has(project.name)}
-								>
-									{#if selectedNames.has(project.name)}
-										<span class="text-black text-base font-semibold">&#x2714;&#xFE0E;</span>
-									{:else}
-										<span class="text-black text-base font-semibold">&nbsp;&nbsp;</span>
-									{/if}
-								</div>
-							</button>
-						{:else}
-							<p class="font-bricolage text-base text-black/50 text-center p-4">No hackatime projects found. Make sure your hackatime account is linked.</p>
-						{/each}
-					</div>
-				</div>
-
-				<!-- Total hours -->
-				<div class="bg-[#f3e8d8] border-2 border-black rounded-lg px-4 py-2.5 w-full">
-					<span class="font-bricolage text-base text-black">Total Hours: {totalHours()}</span>
-				</div>
-			</div>
-
-			<!-- Error message -->
-			{#if errorMsg}
-				<p class="font-bricolage text-sm font-semibold text-red-600 m-0 text-center">{errorMsg}</p>
-			{/if}
-
-			<!-- Done button -->
-			<div class="flex items-center justify-center w-full">
-				<button
-					class="hover-juice bg-[#ffa936] border-2 border-black rounded-lg px-4 py-2 w-[231px] font-bricolage text-base font-semibold text-black cursor-pointer"
-					type="button"
-					onclick={handleDone}
-					disabled={submitting}
-				>
-					{submitting ? 'SAVING...' : 'DONE'}
-				</button>
-			</div>
-		</div>
+		</FormCard>
 	{/if}
 
-	<!-- Back button -->
-	<button class="hover-juice-bg absolute left-8 top-13 z-5 flex items-center gap-2.5 p-5 bg-[#f3e8d8] border-4 border-black rounded-[20px] shadow-[4px_4px_0px_0px_black] cursor-pointer overflow-hidden" onclick={() => goto(`/app/projects/${projectId}/edit`)}>
-		<InputPrompt type="ESC" />
-		<span class="font-cook text-2xl font-semibold text-black">BACK</span>
-	</button>
+	<BackButton onclick={() => goto(`/app/projects/${projectId}/edit`)} />
 </div>
 
 <style>
-	.hover-juice {
-		transition: transform var(--juice-duration) var(--juice-easing);
-	}
-	.hover-juice:hover {
-		transform: scale(var(--juice-scale));
-	}
-
-	.hover-juice-bg {
+	.project-item {
 		transition:
 			background-color var(--selected-duration) ease,
 			transform var(--juice-duration) var(--juice-easing);
 	}
-	.hover-juice-bg:hover {
-		background-color: #ffa936;
+	.project-item:hover {
 		transform: scale(var(--juice-scale));
 	}
 
-	.project-item {
-		transition: transform var(--juice-duration) var(--juice-easing);
-	}
-	.project-item:hover {
-		transform: scale(1.01);
-	}
-
-	/* Custom scrollbar styling */
-	.overflow-y-auto::-webkit-scrollbar {
+	.project-list::-webkit-scrollbar {
 		width: 8px;
 	}
-	.overflow-y-auto::-webkit-scrollbar-track {
+	.project-list::-webkit-scrollbar-track {
 		background: transparent;
 	}
-	.overflow-y-auto::-webkit-scrollbar-thumb {
+	.project-list::-webkit-scrollbar-thumb {
 		background: black;
 		border-radius: 8px;
 	}
