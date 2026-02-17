@@ -1,9 +1,7 @@
 import { Injectable, UnauthorizedException, BadRequestException, ForbiddenException, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 
-import { randomInt, randomBytes, createHmac } from 'crypto';
-
-import { MailService } from '../mail/mail.service';
+import { createHmac } from 'crypto';
 import * as jose from 'jose';
 
 interface HackClubTokenResponse {
@@ -31,7 +29,6 @@ interface HackClubIdTokenClaims {
 @Injectable()
 export class AuthService {
   private readonly SESSION_EXPIRY_MS = 21 * 24 * 60 * 60 * 1000;
-  private readonly OTP_EXPIRY_MS = 600000;
   private readonly HACKCLUB_AUTH_URL = 'https://auth.hackclub.com';
   private readonly STATE_TTL_MS = 600000; // 10 minutes
   private jwks: jose.JWTVerifyGetKey | null = null;
@@ -72,10 +69,7 @@ export class AuthService {
     }
   }
 
-  constructor(
-    private prisma: PrismaService,
-    private mailService: MailService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   getAuthUrl(email?: string, referralCode?: string): { url: string } {
     const clientId = process.env.HACKCLUB_CLIENT_ID;
@@ -426,73 +420,6 @@ export class AuthService {
       console.error('Error checking Hackatime account:', error);
       return null;
     }
-  }
-
-  async sendHackatimeLinkOtp(userId: number, email: string) {
-    const user = await this.prisma.user.findUnique({ where: { userId } });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    const hackatimeAccountId = await this.checkHackatimeAccount(email);
-
-    if (!hackatimeAccountId) {
-      throw new BadRequestException('No Hackatime account found with this email');
-    }
-
-    const linkedUser = await this.prisma.user.findFirst({
-      where: { hackatimeAccount: hackatimeAccountId.toString(), NOT: { userId } },
-      select: { userId: true },
-    });
-
-    if (linkedUser) {
-      throw new BadRequestException('This Hackatime account is already linked to another user');
-    }
-
-    const otp = randomInt(100000, 999999).toString();
-    const expiresAt = new Date(Date.now() + this.OTP_EXPIRY_MS);
-
-    await this.prisma.hackatimeLinkOtp.deleteMany({ where: { userId } });
-
-    await this.prisma.hackatimeLinkOtp.create({
-      data: { userId, email, otpCode: otp, expiresAt },
-    });
-
-    const otpEmailHtml = this.mailService.generateOtpEmailHtml(otp);
-    await this.mailService.sendImmediateEmail(email, otpEmailHtml, 'Link Your Hackatime Account', {
-      type: 'hackatime-link-otp',
-    });
-
-    return { message: 'Verification code sent to your email' };
-  }
-
-  async verifyHackatimeLinkOtp(userId: number, otp: string) {
-    const otpRecord = await this.prisma.hackatimeLinkOtp.findFirst({
-      where: { userId, otpCode: otp, expiresAt: { gt: new Date() }, isUsed: false },
-    });
-
-    if (!otpRecord) {
-      throw new UnauthorizedException('Invalid or expired verification code');
-    }
-
-    const hackatimeAccount = await this.checkHackatimeAccount(otpRecord.email);
-
-    if (!hackatimeAccount) {
-      throw new BadRequestException('No Hackatime account found with this email');
-    }
-
-    await this.prisma.user.update({
-      where: { userId },
-      data: { hackatimeAccount: hackatimeAccount.toString() },
-    });
-
-    await this.prisma.hackatimeLinkOtp.update({
-      where: { id: otpRecord.id },
-      data: { isUsed: true, usedAt: new Date() },
-    });
-
-    return { message: 'Hackatime account linked successfully', hackatimeAccountId: hackatimeAccount };
   }
 
   private calculateAge(birthday: Date) {

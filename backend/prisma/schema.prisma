@@ -33,7 +33,8 @@ model User {
 
   airtableRecId   String?       @map("airtable_rec_id")
 
-  hackatimeAccount String?      @map("hackatime_account")
+  hackatimeAccount      String?      @map("hackatime_account")
+  hackatimeAccessToken  String?      @map("hackatime_access_token")
 
   referralCode    String?       @map("referral_code")
   rafflePos       String?       @map("raffle_pos")

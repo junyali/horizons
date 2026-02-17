@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Req, Res, Query } from '@nestjs/common';
+import { Controller, Post, Get, Req, Res, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiQuery } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
@@ -10,8 +10,6 @@ import {
   LogoutResponse,
   CompleteOnboardingResponse,
   OnboardingStatusResponse,
-  SendHackatimeLinkOtpResponse,
-  VerifyHackatimeLinkOtpResponse,
   RafflePosResponse,
 } from './response';
 
@@ -118,22 +116,6 @@ export class AuthController {
   async getOnboardingStatus(@Req() req: Request): Promise<OnboardingStatusResponse> {
     const userId = req.user.userId;
     return this.authService.getOnboardingStatus(userId);
-  }
-
-  @Post('hackatime-link/send-otp')
-  @ApiOperation({ summary: 'Send OTP to link Hackatime account' })
-  @ApiOkResponse({ type: SendHackatimeLinkOtpResponse })
-  async sendHackatimeLinkOtp(@Req() req: Request, @Body() body: { email: string }): Promise<SendHackatimeLinkOtpResponse> {
-    const userId = req.user.userId;
-    return this.authService.sendHackatimeLinkOtp(userId, body.email);
-  }
-
-  @Post('hackatime-link/verify-otp')
-  @ApiOperation({ summary: 'Verify OTP to link Hackatime account' })
-  @ApiOkResponse({ type: VerifyHackatimeLinkOtpResponse })
-  async verifyHackatimeLinkOtp(@Req() req: Request, @Body() body: { otp: string }): Promise<VerifyHackatimeLinkOtpResponse> {
-    const userId = req.user.userId;
-    return this.authService.verifyHackatimeLinkOtp(userId, body.otp);
   }
 
   @Get('raffle-pos')

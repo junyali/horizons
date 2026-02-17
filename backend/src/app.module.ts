@@ -13,6 +13,7 @@ import { UploadsModule } from "./uploads/uploads.module";
 import { ShopModule } from "./shop/shop.module";
 import { GiftCodesModule } from "./gift-codes/gift-codes.module";
 import { SlackModule } from "./slack/slack.module";
+import { HackatimeModule } from "./hackatime/hackatime.module";
 import { AuthGuard } from "./auth/auth.guard";
 import { PrismaService } from "./prisma.service";
 
@@ -33,7 +34,8 @@ import { PrismaService } from "./prisma.service";
     UploadsModule,
     ShopModule,
     GiftCodesModule,
-    SlackModule
+    SlackModule,
+    HackatimeModule,
   ],
   providers: [
     PrismaService,
