@@ -176,9 +176,9 @@ export class ProjectsService {
     }
 
     // Validate required project fields
-    if (!project.projectTitle || !project.description || 
+    if (!project.projectTitle || !project.description ||
         project.nowHackatimeHours === null || project.nowHackatimeHours === undefined ||
-        !project.playableUrl || !project.repoUrl || !project.screenshotUrl ||
+        !project.playableUrl || !project.repoUrl || !project.readmeUrl || !project.screenshotUrl ||
         !project.nowHackatimeProjects || project.nowHackatimeProjects.length === 0) {
       throw new ForbiddenException('Project incomplete. Please complete all required project fields first.');
     }
@@ -287,6 +287,9 @@ export class ProjectsService {
     }
     if (updateProjectDto.repoUrl !== undefined) {
       updateData.repoUrl = updateProjectDto.repoUrl;
+    }
+    if (updateProjectDto.readmeUrl !== undefined) {
+      updateData.readmeUrl = updateProjectDto.readmeUrl;
     }
     if (updateProjectDto.screenshotUrl !== undefined) {
       updateData.screenshotUrl = updateProjectDto.screenshotUrl;

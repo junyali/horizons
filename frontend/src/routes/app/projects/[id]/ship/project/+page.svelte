@@ -56,6 +56,7 @@
 			description = p.description ?? '';
 			demoUrl = p.playableUrl ?? '';
 			codeUrl = p.repoUrl ?? '';
+			readmeUrl = p.readmeUrl ?? '';
 			mediaUrl = p.screenshotUrl ?? null;
 			mediaPreview = p.screenshotUrl ?? null;
 		} else {
@@ -120,6 +121,7 @@
 					description: description.trim(),
 					playableUrl: demoUrl.trim(),
 					repoUrl: codeUrl.trim(),
+					readmeUrl: readmeUrl.trim(),
 					screenshotUrl: mediaUrl!,
 				},
 			}),

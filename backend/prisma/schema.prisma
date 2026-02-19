@@ -68,6 +68,7 @@ model Project {
   playableUrl        String?      @map("playable_url")
   projectTitle       String       @map("project_title") @db.VarChar(30)
   repoUrl            String?      @map("repo_url")
+  readmeUrl          String?      @map("readme_url")
   screenshotUrl      String?      @map("screenshot_url")
   isLocked           Boolean      @default(false) @map("is_locked")
   isFraud             Boolean      @default(false) @map("is_fraud")
