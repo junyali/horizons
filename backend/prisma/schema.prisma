@@ -85,6 +85,7 @@ model Submission {
   description      String?        @db.VarChar(500)
   repoUrl          String?        @map("repo_url")
   approvedHours    Float?         @map("approved_hours")
+  hackatimeHours   Float?         @map("hackatime_hours")
   hoursJustification String?      @map("hours_justification") @db.VarChar(500)
   approvalStatus   ApprovalStatus @default(pending) @map("approval_status")
   reviewedBy       String?        @map("reviewed_by")

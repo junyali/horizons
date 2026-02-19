@@ -214,6 +214,7 @@ export class ProjectsService {
       screenshotUrl: project.screenshotUrl,
       description: project.description,
       repoUrl: project.repoUrl,
+      hackatimeHours: recalculatedHours,
     };
 
     const submission = await this.prisma.submission.create({
