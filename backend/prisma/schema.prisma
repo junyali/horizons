@@ -190,20 +190,6 @@ model HackatimeLinkOtp {
   @@map("hackatime_link_otps")
 }
 
-model SlackLinkToken {
-  id        String    @id @default(uuid())
-  slackUserId String  @map("slack_user_id")
-  token     String    @unique
-  expiresAt DateTime  @map("expires_at")
-  isUsed    Boolean   @default(false) @map("is_used")
-  usedAt    DateTime? @map("used_at")
-  createdAt DateTime  @default(now()) @map("created_at")
-
-  @@index([token])
-  @@index([slackUserId])
-  @@map("slack_link_tokens")
-}
-
 
 enum ProjectType {
   windows_playable

@@ -281,14 +281,23 @@ export class AuthService {
     if (referralCode && !existingUser.referralCode) {
       updateData.referralCode = referralCode;
     }
-    if (claims.slack_id && !existingUser.slackUserId) {
+    if (claims.given_name && existingUser.firstName !== claims.given_name) {
+      updateData.firstName = claims.given_name;
+    }
+    if (claims.family_name && existingUser.lastName !== claims.family_name) {
+      updateData.lastName = claims.family_name;
+    }
+    if (claims.slack_id && existingUser.slackUserId !== claims.slack_id) {
       updateData.slackUserId = claims.slack_id;
     }
     if (claims.verification_status && existingUser.verificationStatus !== claims.verification_status) {
       updateData.verificationStatus = claims.verification_status;
     }
-    if (claims.birthdate && !existingUser.birthday) {
-      updateData.birthday = new Date(claims.birthdate);
+    if (claims.birthdate) {
+      const incomingBirthday = new Date(claims.birthdate);
+      if (!existingUser.birthday || existingUser.birthday.getTime() !== incomingBirthday.getTime()) {
+        updateData.birthday = incomingBirthday;
+      }
     }
 
     if (Object.keys(updateData).length > 0) {

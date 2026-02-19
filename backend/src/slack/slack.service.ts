@@ -18,17 +18,12 @@ interface SlackMessageBlock {
 @Injectable()
 export class SlackService {
   private botToken: string;
-  private signingSecret: string;
 
   constructor(private prisma: PrismaService) {
     this.botToken = process.env.SLACK_BOT_TOKEN || '';
-    this.signingSecret = process.env.SLACK_SIGNING_SECRET || '';
 
     if (!this.botToken) {
       console.warn('SLACK_BOT_TOKEN not configured - Slack notifications disabled');
-    }
-    if (!this.signingSecret) {
-      console.warn('SLACK_SIGNING_SECRET not configured - Slack command verification disabled');
     }
   }
 
@@ -123,104 +118,6 @@ export class SlackService {
       console.error('Error fetching Slack user info:', error);
       return null;
     }
-  }
-
-  async generateSlackLinkToken(slackUserId: string): Promise<{ success: boolean; message: string; link?: string }> {
-    const crypto = require('crypto');
-    const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 1);
-
-    await this.prisma.slackLinkToken.create({
-      data: {
-        slackUserId,
-        token,
-        expiresAt,
-      },
-    });
-
-    const frontendUrl = process.env.FRONTEND_URL || 'https://midnight.hackclub.com';
-    const link = `${frontendUrl}/slack/link?token=${token}`;
-
-    return {
-      success: true,
-      message: 'Click the link below to link your Slack account to your Midnight account. The link expires in 1 hour.',
-      link,
-    };
-  }
-
-  async linkSlackAccountWithToken(token: string, userId: number): Promise<{ success: boolean; message: string }> {
-    if (!token || token.length !== 64) {
-      return { success: false, message: 'Invalid token format.' };
-    }
-
-    const linkToken = await this.prisma.slackLinkToken.findUnique({
-      where: { token },
-    });
-
-    if (!linkToken) {
-      return { success: false, message: 'Invalid or expired link token.' };
-    }
-
-    const now = new Date();
-    if (linkToken.expiresAt < now) {
-      return { success: false, message: 'Invalid or expired link token.' };
-    }
-
-    if (linkToken.isUsed) {
-      return { success: false, message: 'Invalid or expired link token.' };
-    }
-
-    const user = await this.prisma.user.findUnique({
-      where: { userId },
-    });
-
-    if (!user) {
-      return { success: false, message: 'User not found.' };
-    }
-
-    const existingLink = await this.prisma.user.findFirst({
-      where: { 
-        slackUserId: linkToken.slackUserId,
-        NOT: { userId },
-      },
-    });
-
-    if (existingLink) {
-      return { success: false, message: 'This Slack account is already linked to a different Midnight account.' };
-    }
-
-    await this.prisma.user.update({
-      where: { userId },
-      data: { slackUserId: linkToken.slackUserId },
-    });
-
-    await this.prisma.slackLinkToken.update({
-      where: { id: linkToken.id },
-      data: {
-        isUsed: true,
-        usedAt: new Date(),
-      },
-    });
-
-    return { success: true, message: 'Successfully linked your Slack account! You\'ll now receive notifications when your submissions are reviewed.' };
-  }
-
-  async unlinkSlackAccount(slackUserId: string): Promise<{ success: boolean; message: string }> {
-    const user = await this.prisma.user.findFirst({
-      where: { slackUserId },
-    });
-
-    if (!user) {
-      return { success: false, message: 'No Midnight account is linked to this Slack account.' };
-    }
-
-    await this.prisma.user.update({
-      where: { userId: user.userId },
-      data: { slackUserId: null },
-    });
-
-    return { success: true, message: 'Successfully unlinked Slack from your Midnight account.' };
   }
 
   async sendDirectMessage(
@@ -356,35 +253,6 @@ export class SlackService {
     const fallbackText = `Your submission for "${data.projectTitle}" has been ${statusText}.${data.feedback ? ` Feedback: ${data.feedback}` : ''}`;
 
     return this.sendDirectMessage(user.slackUserId, fallbackText, blocks);
-  }
-
-  verifySlackRequest(
-    signature: string,
-    timestamp: string,
-    body: string,
-  ): boolean {
-    if (!this.signingSecret) {
-      console.warn('Slack signing secret not configured, skipping verification');
-      return true;
-    }
-
-    const crypto = require('crypto');
-    const fiveMinutesAgo = Math.floor(Date.now() / 1000) - 60 * 5;
-
-    if (parseInt(timestamp) < fiveMinutesAgo) {
-      return false;
-    }
-
-    const sigBasestring = `v0:${timestamp}:${body}`;
-    const mySignature = 'v0=' + crypto
-      .createHmac('sha256', this.signingSecret)
-      .update(sigBasestring, 'utf8')
-      .digest('hex');
-
-    return crypto.timingSafeEqual(
-      Buffer.from(mySignature, 'utf8'),
-      Buffer.from(signature, 'utf8'),
-    );
   }
 }
 

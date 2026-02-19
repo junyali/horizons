@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
@@ -21,7 +20,7 @@ import { SlackModule } from '../slack/slack.module';
     MailModule,
     SlackModule,
   ],
-  controllers: [UserController, AdminController, DashboardController],
+  controllers: [AdminController, DashboardController],
   providers: [
     UserService,
     AdminService,

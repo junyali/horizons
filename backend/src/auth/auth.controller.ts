@@ -125,4 +125,11 @@ export class AuthController {
     const userId = req.user.userId;
     return this.authService.getRafflePos(userId);
   }
+
+  @Post('sync')
+  @ApiOperation({ summary: 'Get re-login URL to force sync user data from HCA' })
+  @ApiOkResponse({ type: AuthUrlResponse })
+  async syncHcaData(@Req() req: Request): Promise<AuthUrlResponse> {
+    return this.authService.getAuthUrl(req.user.email);
+  }
 }
