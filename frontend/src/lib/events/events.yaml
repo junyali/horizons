@@ -3,14 +3,14 @@ nexus:
   tagline: "300+ PERSON HACKATHON IN SF \u2022 JUNE 19-21"
   headline: HIGH SCHOOL FLAGSHIP HACKATHONS ACROSS THE WORLD
   logo: /logos/horizons-nexus.svg
-  logoMaxWidth: 600px   # max width of the logo on the splash screen
+  logoMaxWidth: 600px
   buttonText: "> CLICK  OR  PRESS  ENTER"
   buttonTextMobile: "> TAP  TO  START"
   footerHint: "USE  WASD  OR  YOUR  MOUSE"
   background:
-    image: null        # URL or path to a custom background image (replaces default pattern)
-    pattern: true      # use the default rotating pattern (ignored if image is set)
-    opacity: 0.5       # background pattern/image opacity
+    image: null
+    pattern: true
+    opacity: 0.5
   colors:
     background: "#f3e8d8"
     dark: "#271c0c"
@@ -34,19 +34,55 @@ nexus:
       href: /faq
       icon: huh
 
+equinox:
+  name: Horizons Equinox
+  tagline: "60 PERSON HIGH SCHOOL HACKATHON IN EGYPT \u2022 AUG 14-16"
+  headline: A HORIZONS EVENT IN AFRICA
+  logo: /logos/horizons-equinox.png
+  logoMaxWidth: 650px
+  buttonText: "> CLICK  OR  PRESS  ENTER"
+  buttonTextMobile: "> TAP  TO  START"
+  footerHint: "USE  WASD  OR  YOUR  MOUSE"
+  background:
+    image: null
+    pattern: true
+    opacity: 0.5
+  colors:
+    background: "#f4efe4"
+    dark: "#1a1510"
+    text: "#000000"
+    primary: "#c9a227"
+    secondary: "#2d6a6a"
+    tertiary: "#8b4513"
+    cardBg: "#f4efe4"
+  stripes:
+    - "#c9a227"
+    - "#2d6a6a"
+    - "#8b4513"
+  menu:
+    - title: JOIN NOW
+      subtitle: START WORKING ON YOUR PROJECTS!
+      action: signup
+      icon: h
+    - title: "WHAT'S HORIZONS?"
+      subtitle: LEARN MORE ABOUT THE EVENT!
+      action: link
+      href: /faq
+      icon: huh
+
 europa:
   name: Horizons Europa
   tagline: "50+ PERSON HACKATHON IN CENTRAL EUROPE \u2022 JULY 24-26"
   headline: HIGH SCHOOL FLAGSHIP HACKATHONS ACROSS THE WORLD
   logo: /logos/horizons-europa.svg
-  logoMaxWidth: 600px   # max width of the logo on the splash screen
+  logoMaxWidth: 600px
   buttonText: "> CLICK  OR  PRESS  ENTER"
   buttonTextMobile: "> TAP  TO  START"
   footerHint: "USE  WASD  OR  YOUR  MOUSE"
   background:
-    image: null        # URL or path to a custom background image (replaces default pattern)
-    pattern: true      # use the default rotating pattern (ignored if image is set)
-    opacity: 0.5       # background pattern/image opacity
+    image: null
+    pattern: true
+    opacity: 0.5
   colors:
     background: "#f3e8d8"
     dark: "#271c0c"

@@ -351,11 +351,11 @@
 	{#if activated}
 		<div class="flex flex-col h-full items-center gap-4 sm:gap-8 pb-8">
 			<div class="flex flex-col w-full">
-				<div class="flex gap-2 sm:gap-4 items-center sm:items-end px-4 sm:px-10 pt-6 sm:pt-10 pb-3">
-					<div in:animateLogoIn>
-						<img src={config.logo} alt={config.name} class="h-14 sm:h-24" />
+				<div class="flex gap-2 sm:gap-4 items-center sm:items-end px-4 sm:px-10 pt-6 sm:pt-10 pb-3 min-w-0">
+					<div class="shrink-0" in:animateLogoIn>
+						<img src={config.logo} alt={config.name} class="h-14 sm:h-24 w-auto max-w-none object-contain"/>
 					</div>
-					<p in:fade={{ duration: disableAnimations ? 0 : 300, delay: disableAnimations ? 0 : 200 }} class="tagline hidden sm:block" style="color: {config.colors.text}">
+					<p in:fade={{ duration: disableAnimations ? 0 : 300, delay: disableAnimations ? 0 : 200 }} class="tagline hidden sm:block min-w-0 flex-1" style="color: {config.colors.text}">
 						<TextWave text={config.tagline} disabled={disableAnimations} />
 					</p>
 				</div>
