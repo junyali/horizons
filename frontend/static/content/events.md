@@ -4,7 +4,7 @@
 ```yaml
 Start: 2026-04-07T14:00:00+00:00
 End: 2026-04-07T20:00:00+00:00
-JoinInfo: "[Sign up on the Horizons dashboard](/app)"
+JoinInfo: "[Join the huddle in #Horizons!](https://hackclub.enterprise.slack.com/archives/C0AGKQ6K476)"
 Tagline: "Lets start off with a bang!"
 ```
 Come join us for our first lock in call of the event! Discuse project ideas, ask questions or just lock in on your project for any Horizons event!
@@ -13,7 +13,7 @@ Come join us for our first lock in call of the event! Discuse project ideas, ask
 ## Kickoff call (#1!)
 ```yaml
 Start: 2026-04-08T17:00:00+00:00
-End: 2026-04-05T20:00:00+00:00
+End: 2026-04-08T20:00:00+00:00
 JoinInfo: "[Sign up on the Horizons dashboard](/app)"
 Tagline: "Learn more about Horizons!"
 ```
@@ -29,32 +29,61 @@ Tagline: "Learn more about Horizons!"
 ```
 DATE NOT FINAL.
 
-## Show and tell!(1!)
+## Show and tell!(1)
 ```yaml
 Start: 2026-04-09T19:00:00+00:00
 End: 2026-04-09T20:00:00+00:00
-JoinInfo: "[Sign up on the Horizons dashboard](/app)"
-Tagline: "Learn more about Horizons!"
+Tagline: "Show off what youve been working on"
+JoinInfo: "[Join the huddle in #Horizons!](https://hackclub.enterprise.slack.com/archives/C0AGKQ6K476)"
 ```
 Come show off what youve been working on! Get some feedback!
 lock in call afterwards tentative on if i can get someone to commit to it
 
-## unnamed game jam(work on pun)
+
+## Orion Jam!
 ```yaml
 Start: 2026-04-10T11:00:00+00:00
 End: 2026-04-12T13:00:00+00:00
-JoinInfo: "[Sign up on the Horizons dashboard](/app)"
-Tagline: "Learn more about Horizons!"
+JoinInfo: "[Sign up on itch.io!](https://itch.io/)"
+Tagline: "Create a game your proud of!"
 ```
-Join to learn about horizons(add more blalgllblalal)
+Take part in Horizons first game jam! With a constant lock in call and workshops to help you get started, this is the perfect way get into horizons!2
 
 
-## gamejam polish workshop
+## Godot workshop!!
+```yaml
+Start: 2026-04-10T15:00:00+00:00
+End: 2026-04-10T16:00:00+00:00
+JoinInfo: "[Sign up on the Horizons dashboard](/app)"
+Tagline: "Learn the basics of the godot game engine!"
+```
+Learn how to make a game using godot!
+
+## Sound Design Workshop!
 ```yaml
 Start: 2026-04-11T13:00:00+00:00
-End: 2026-04-12T13:00:00+00:00
+End: 2026-04-11T14:00:00+00:00
 JoinInfo: "[Sign up on the Horizons dashboard](/app)"
-Tagline: "Learn more about Horizons!"
+Tagline: "Learn sound design using LMMS"
 ```
-Join to learn about horizons(add more blalgllblalal)
+Learn how to polish your game with sound effects using lmms!!
+
+## Lock in Call (3/14)
+```yaml
+Start: 2026-04-14T14:00:00+00:00
+End: 2026-04-14T20:00:00+00:00
+JoinInfo: "[Join the huddle in #Horizons!](https://hackclub.enterprise.slack.com/archives/C0AGKQ6K476)"
+Tagline: "Come lock in!"
+```
+Come join us for a lock in call! Ask questions, show off your project or just hang out and code!
+
+
+## Show and tell!(2)
+```yaml
+Start: 2026-04-16T19:00:00+00:00
+End: 2026-04-16T20:00:00+00:00
+Tagline: "Show off what youve been working on"
+```
+Come show off what youve been working on! Get some feedback!
+lock in call afterwards tentative on if i can get someone to commit to it
 
